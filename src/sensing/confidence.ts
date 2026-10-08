@@ -1,0 +1,87 @@
+/**
+ * Confidence scoring. Pure: feature vector in, score and per-feature
+ * contributions out.
+ *
+ * The contributions are not debug output — the verification screen is built
+ * on them, and that screen is the answer to the only hard question anyone
+ * asks about this product.
+ */
+import { BANDS, CONFIDENCE_THRESHOLD, type Band } from './bands';
+import { FEATURE_KEYS, type FeatureKey, type FeatureVector } from './types';
+
+export type FeatureScore = {
+  key: FeatureKey;
+  value: number;
+  band: Band;
+  /** 0..1. Exactly 1 anywhere inside the band. */
+  score: number;
+  inBand: boolean;
+  /** Where the value sits across the band, 0..1, for the bar. Clamped. */
+  position: number;
+};
+
+export type Confidence = {
+  /** 0..1, weighted mean of the feature scores. */
+  score: number;
+  verified: boolean;
+  features: FeatureScore[];
+  /** One plain sentence for the verification screen. */
+  explanation: string;
+};
+
+function scoreOne(key: FeatureKey, raw: number): FeatureScore {
+  const band = BANDS[key];
+  const value = band.absolute ? Math.abs(raw) : raw;
+  const inBand = value >= band.min && value <= band.max;
+
+  let score: number;
+  if (inBand) {
+    score = 1;
+  } else {
+    const distance = value < band.min ? band.min - value : value - band.max;
+    // Exponential falloff: forgiving just outside, unforgiving far outside.
+    score = Math.exp(-((distance / Math.max(band.softness, 1e-6)) ** 2));
+  }
+
+  const span = band.max - band.min;
+  const position = span > 1e-9 ? Math.min(1, Math.max(0, (value - band.min) / span)) : 0.5;
+
+  return { key, value, band, score, inBand, position };
+}
+
+export function scoreConfidence(f: FeatureVector): Confidence {
+  const features = FEATURE_KEYS.map((k) => scoreOne(k, f[k]));
+
+  const totalWeight = features.reduce((a, s) => a + s.band.weight, 0);
+  const score = totalWeight > 0
+    ? features.reduce((a, s) => a + s.score * s.band.weight, 0) / totalWeight
+    : 0;
+
+  return {
+    score,
+    verified: score >= CONFIDENCE_THRESHOLD,
+    features,
+    explanation: explain(score, features),
+  };
+}
+
+/**
+ * Names the weakest failing feature rather than reciting all of them,
+ * because a user who is not crediting wants one reason, not six.
+ */
+function explain(score: number, features: FeatureScore[]): string {
+  const failing = features.filter((s) => !s.inBand).sort((a, b) => a.score - b.score);
+
+  if (!failing.length) {
+    return 'All six signals sit inside their expected range. Crediting.';
+  }
+
+  const worst = failing[0];
+  if (score >= CONFIDENCE_THRESHOLD) {
+    return `${worst.band.rationale} That one reads off, but the rest hold. Crediting.`;
+  }
+
+  const others = failing.length - 1;
+  const tail = others > 0 ? ` ${others} other signal${others > 1 ? 's' : ''} also out of range.` : '';
+  return `${worst.band.rationale} Not crediting.${tail}`;
+}
