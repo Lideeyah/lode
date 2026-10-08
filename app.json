@@ -7,11 +7,6 @@
     "userInterfaceStyle": "light",
     "scheme": "lode",
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#F2EEE4"
-    },
     "android": {
       "package": "com.lideeyah.lode",
       "adaptiveIcon": {
@@ -21,7 +16,17 @@
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
-      "expo-dev-client"
+      "expo-dev-client",
+      "react-native-quick-crypto",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#F2EEE4"
+        }
+      ]
     ],
     "extra": {
       "solanaCluster": "devnet",
