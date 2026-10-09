@@ -5,7 +5,7 @@
  * The hero confidence figure updates once a second and simply changes. No
  * tween, no easing, no counting up.
  */
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -46,7 +46,8 @@ export default function SessionScreen() {
   const { width } = useWindowDimensions();
   const router = useRouter();
   const { account, connect } = useMobileWallet();
-  const { balances, challenge, programReady, loading, refresh } = useChain();
+  const { adapter, authority, balances, challenge, programReady, loading, refresh } = useChain();
+  const [airdropping, setAirdropping] = useState(false);
   const session = useSessionContext();
 
   const { snapshot, confidence, trace, budget, best, running } = session;
@@ -75,6 +76,30 @@ export default function SessionScreen() {
       return;
     }
     await session.start();
+  };
+
+  /**
+   * Devnet faucets rate-limit constantly, so this reports plainly rather
+   * than retrying. Submitting costs a fee, and a wallet with no SOL fails
+   * at the last step of the demo.
+   */
+  const airdrop = async () => {
+    if (!adapter || !authority) return;
+    setAirdropping(true);
+    try {
+      const sig = await adapter.requestAirdrop(authority, 1);
+      if (!sig) {
+        Alert.alert(
+          'Faucet declined',
+          'The devnet faucet is rate-limiting. Try again shortly, or fund this address from faucet.solana.com.',
+        );
+      } else {
+        await adapter.confirm(sig);
+        await refresh();
+      }
+    } finally {
+      setAirdropping(false);
+    }
   };
 
   const end = () => {
@@ -113,6 +138,21 @@ export default function SessionScreen() {
               <Text style={styles.body}>
                 Connect a wallet to record effort and submit work.
               </Text>
+            </Card>
+          ) : null}
+
+          {account && balances.sol < 0.01 ? (
+            <Card>
+              <Label>No devnet SOL</Label>
+              <Text style={styles.body}>
+                Submitting a solution costs a transaction fee. Fund this wallet
+                before ending a session.
+              </Text>
+              <SecondaryButton
+                label={airdropping ? 'Requesting…' : 'Request 1 devnet SOL'}
+                onPress={airdrop}
+                disabled={airdropping}
+              />
             </Card>
           ) : null}
 
