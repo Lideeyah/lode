@@ -46,7 +46,7 @@ export default function SummaryScreen() {
   const router = useRouter();
   const { signMessage, signAndSendTransaction, connection } = useMobileWallet();
   const { authority, challenge, refresh } = useChain();
-  const { snapshot, best, trace, machine } = useSessionContext();
+  const { snapshot, best, trace, machine, challengeAtStart } = useSessionContext();
 
   const [stage, setStage] = useState<Stage>('review');
   const [error, setError] = useState<string | null>(null);
@@ -137,7 +137,7 @@ export default function SummaryScreen() {
       nonce: best.nonce,
       difficulty: best.difficulty,
       claim,
-      challengeAtMine: challenge.challenge,
+      challengeAtMine: challengeAtStart ?? challenge.challenge,
       currentChallenge: challenge.challenge,
       signAndSend: (tx: Transaction, slot: number) =>
         signAndSendTransaction(tx, slot) as unknown as Promise<string>,
@@ -157,7 +157,7 @@ export default function SummaryScreen() {
       setError(outcome.message);
     }
   }, [
-    authority, challenge, best, snapshot, digest, signMessage,
+    authority, challenge, best, snapshot, digest, signMessage, challengeAtStart,
     connection, signAndSendTransaction, storedId, refresh,
   ]);
 

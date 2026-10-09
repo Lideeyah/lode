@@ -19,6 +19,13 @@ const TRACE_POINTS = 120;
 
 export type SessionView = {
   snapshot: SessionSnapshot;
+  /**
+   * The challenge this session actually mined against, captured at start.
+   * Compared against the live challenge at submission time: if the program
+   * rotated mid-session the solution is stale, and saying so beats sending
+   * a transaction that cannot succeed.
+   */
+  challengeAtStart: Uint8Array | null;
   confidence: Confidence | null;
   trace: number[];
   budget: number;
@@ -35,8 +42,11 @@ export function useSession(challenge: Uint8Array | null, authority: Uint8Array |
   const stopRequested = useRef(false);
   const nonceCursor = useRef(0n);
 
+  const challengeAtStart = useRef<Uint8Array | null>(null);
+
   const [view, setView] = useState<SessionView>({
     snapshot: machine.current.snapshot(),
+    challengeAtStart: null,
     confidence: null,
     trace: [],
     budget: 0,
@@ -54,6 +64,7 @@ export function useSession(challenge: Uint8Array | null, authority: Uint8Array |
   const publish = useCallback(() => {
     setView({
       snapshot: machine.current.snapshot(),
+      challengeAtStart: challengeAtStart.current,
       confidence: confidenceRef.current,
       trace: [...traceRef.current],
       budget: machine.current.budget(),
@@ -74,6 +85,7 @@ export function useSession(challenge: Uint8Array | null, authority: Uint8Array |
     hashCount.current = 0;
     confidenceRef.current = null;
     stopRequested.current = false;
+    challengeAtStart.current = challenge ? new Uint8Array(challenge) : null;
     nonceCursor.current = BigInt(Math.floor(Math.random() * 2 ** 32));
 
     await activateKeepAwakeAsync('lode-session').catch(() => {});
@@ -94,7 +106,7 @@ export function useSession(challenge: Uint8Array | null, authority: Uint8Array |
     c.start();
     capture.current = c;
     publish();
-  }, [publish]);
+  }, [publish, challenge]);
 
   const stop = useCallback(() => {
     stopRequested.current = true;
@@ -108,7 +120,11 @@ export function useSession(challenge: Uint8Array | null, authority: Uint8Array |
   // Mining tick. Separate from the capture loop because it runs an order of
   // magnitude less often and must not block window processing.
   useEffect(() => {
-    if (!view.running || !challenge || !authority) return;
+    // Mines against the challenge captured at start, not the live one: if
+    // the program rotates mid-session, every hash found after the rotation
+    // would be against a challenge the submission does not claim.
+    const mining_challenge = challengeAtStart.current;
+    if (!view.running || !mining_challenge || !authority) return;
 
     const id = setInterval(async () => {
       if (mining.current) return;
@@ -118,7 +134,7 @@ export function useSession(challenge: Uint8Array | null, authority: Uint8Array |
       mining.current = true;
       try {
         const tick = await mine(
-          challenge,
+          mining_challenge,
           authority,
           nonceCursor.current,
           budget,
@@ -136,7 +152,7 @@ export function useSession(challenge: Uint8Array | null, authority: Uint8Array |
     }, MINE_INTERVAL_MS);
 
     return () => clearInterval(id);
-  }, [view.running, challenge, authority, publish]);
+  }, [view.running, authority, publish]);
 
   // Refresh the view once a second even when no window has landed, so
   // elapsed time and the trace keep moving.
