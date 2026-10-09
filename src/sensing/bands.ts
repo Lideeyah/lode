@@ -84,9 +84,9 @@ export const BANDS: Record<FeatureKey, Band> = {
    * vibrating surface does not wander at all; one being waved wanders wildly.
    */
   orientationDrift: {
-    min: 0.4,
+    min: 0.8,
     max: 18.0,
-    softness: 6.0,
+    softness: 0.6,
     weight: 0.9,
     rationale: 'A carried phone drifts a little. A mounted one never does.',
   },
@@ -105,6 +105,14 @@ export const BANDS: Record<FeatureKey, Band> = {
     rationale: 'Walking couples rotation to vertical motion. Shaking does not.',
   },
 };
+
+/**
+ * Minimum spread of acceleration magnitude, in g, before any shape feature
+ * is believed. A phone at rest reads about 0.002; walking reads an order of
+ * magnitude above this. Below the floor, confidence is zero regardless of
+ * what the other six features say.
+ */
+export const MOTION_FLOOR = 0.02;
 
 /** Confidence at or above this counts as verified human movement. */
 export const CONFIDENCE_THRESHOLD = 0.62;

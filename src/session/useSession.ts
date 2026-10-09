@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { Capture } from '../sensing/capture';
-import { extractFeatures } from '../sensing/features';
+import { extractFeatures, motionEnergy } from '../sensing/features';
 import { scoreConfidence, type Confidence } from '../sensing/confidence';
 import { magnitude } from '../sensing/features';
 import { SessionMachine, type SessionSnapshot } from './machine';
@@ -85,7 +85,7 @@ export function useSession(challenge: Uint8Array | null, authority: Uint8Array |
       },
       onWindow: (w) => {
         const features = extractFeatures(w);
-        const conf = scoreConfidence(features);
+        const conf = scoreConfidence(features, motionEnergy(w));
         confidenceRef.current = conf;
         machine.current.ingest(conf, features);
         publish();

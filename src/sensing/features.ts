@@ -66,18 +66,24 @@ export function dominantFrequency(signal: number[], rate: number): number {
   const energy = x.reduce((a, v) => a + v * v, 0);
   if (energy < 1e-9) return 0;
 
+  // The biased estimator: the raw sum, with no correction for the shorter
+  // overlap at long lags. The taper that bias introduces is wanted here.
+  // Dividing by (n - lag) instead lets a handful of noisy products at the
+  // longest lag outscore the true period, which pins every reading to the
+  // bottom of the search range.
   let bestLag = 0;
   let bestCorr = -Infinity;
   for (let lag = minLag; lag <= maxLag; lag++) {
     let c = 0;
     for (let i = 0; i + lag < n; i++) c += x[i] * x[i + lag];
-    // Normalise by overlap length so long lags are not unfairly penalised.
-    const norm = c / (n - lag);
-    if (norm > bestCorr) {
-      bestCorr = norm;
+    if (c > bestCorr) {
+      bestCorr = c;
       bestLag = lag;
     }
   }
+
+  // A periodic signal correlates positively with itself one period along.
+  // Anything else is noise, and reporting a frequency for it would be a lie.
   if (bestLag === 0 || bestCorr <= 0) return 0;
   return rate / bestLag;
 }
@@ -144,6 +150,22 @@ export function correlation(a: number[], b: number[]): number {
   }
   if (da < 1e-12 || db < 1e-12) return 0;
   return num / Math.sqrt(da * db);
+}
+
+/**
+ * Spread of the acceleration magnitude, in g.
+ *
+ * This is not a feature, it is a precondition. Every feature below is a
+ * *shape* statistic, and shape statistics computed over sensor noise land
+ * wherever they like — a phone sitting on a desk produces a skewness and a
+ * kurtosis near zero, both of which sit happily inside the walking band.
+ * Without this gate a motionless device scores as a walker.
+ */
+export function motionEnergy(w: Window): number {
+  if (w.samples.length < 4) return 0;
+  const mags = w.samples.map(magnitude);
+  const m = mags.reduce((a, b) => a + b, 0) / mags.length;
+  return Math.sqrt(mags.reduce((a, x) => a + (x - m) ** 2, 0) / (mags.length - 1));
 }
 
 export function extractFeatures(w: Window): FeatureVector {

@@ -6,7 +6,7 @@
  * on them, and that screen is the answer to the only hard question anyone
  * asks about this product.
  */
-import { BANDS, CONFIDENCE_THRESHOLD, type Band } from './bands';
+import { BANDS, CONFIDENCE_THRESHOLD, MOTION_FLOOR, type Band } from './bands';
 import { FEATURE_KEYS, type FeatureKey, type FeatureVector } from './types';
 
 export type FeatureScore = {
@@ -49,8 +49,24 @@ function scoreOne(key: FeatureKey, raw: number): FeatureScore {
   return { key, value, band, score, inBand, position };
 }
 
-export function scoreConfidence(f: FeatureVector): Confidence {
+/**
+ * @param motion Spread of acceleration magnitude from motionEnergy(). When
+ * supplied and below MOTION_FLOOR, the score is forced to zero: the six
+ * features are shape statistics, and the shape of noise is meaningless.
+ * Omitting it scores the vector on its own terms, which is what the unit
+ * tests and the calibration screen want.
+ */
+export function scoreConfidence(f: FeatureVector, motion?: number): Confidence {
   const features = FEATURE_KEYS.map((k) => scoreOne(k, f[k]));
+
+  if (motion !== undefined && motion < MOTION_FLOOR) {
+    return {
+      score: 0,
+      verified: false,
+      features,
+      explanation: 'The instrument is not moving. Nothing to credit.',
+    };
+  }
 
   const totalWeight = features.reduce((a, s) => a + s.band.weight, 0);
   const score = totalWeight > 0
