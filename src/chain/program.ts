@@ -10,7 +10,7 @@ import { Buffer } from 'buffer';
 import { sha256, sha256Bytes } from './hash';
 
 /** Replaced at deploy time by scripts/sync-program-id.mjs. */
-export const LODE_PROGRAM_ID = new PublicKey('Lode1111111111111111111111111111111111111');
+export const LODE_PROGRAM_ID = new PublicKey('ADYPeA3jNDXoXQjYSTXwLCXjFiWJWZx99ANRnhiGf5Wp');
 
 export const TOKEN_PROGRAM_ID = new PublicKey(
   'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',

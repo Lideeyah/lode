@@ -1,0 +1,8 @@
+# Build output
+target/
+.anchor/
+
+# The program id keypair is a credential: whoever holds it controls
+# upgrades. It stays local. The public id is committed in .program-id so a
+# fresh clone still knows which program to talk to.
+target/deploy/lode-keypair.json
