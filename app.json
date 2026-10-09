@@ -37,6 +37,13 @@
         "projectId": "19c37c8c-1446-4575-ba8c-98082958ef67"
       }
     },
-    "owner": "lideeyah"
+    "owner": "lideeyah",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/19c37c8c-1446-4575-ba8c-98082958ef67"
+    },
+    "ios": {}
   }
 }
