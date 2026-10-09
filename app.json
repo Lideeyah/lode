@@ -11,7 +11,7 @@
       "package": "com.lideeyah.lode",
       "adaptiveIcon": {
         "backgroundColor": "#1C1A17",
-        "foregroundImage": "./assets/android-icon-foreground.png"
+        "foregroundImage": "./assets/adaptive-icon.png"
       },
       "predictiveBackGestureEnabled": false
     },
@@ -24,7 +24,8 @@
         {
           "image": "./assets/splash-icon.png",
           "resizeMode": "contain",
-          "backgroundColor": "#F2EEE4"
+          "backgroundColor": "#F2EEE4",
+          "imageWidth": 300
         }
       ],
       "expo-router"
