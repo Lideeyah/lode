@@ -62,9 +62,26 @@ export function ChainProvider({ children }: { children: ReactNode }) {
     }
   }, [adapter, authority]);
 
+  // Retry a failed first read. The config account is what unlocks mining,
+  // and a single rate-limited request should not cost the whole session.
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    let cancelled = false;
+    let attempt = 0;
+    const tick = async () => {
+      if (cancelled) return;
+      await refresh();
+      attempt += 1;
+    };
+    void tick();
+    const id = setInterval(() => {
+      if (cancelled || challenge || attempt > 6) return;
+      void tick();
+    }, 3000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [refresh, challenge]);
 
   const value: ChainState = {
     adapter,

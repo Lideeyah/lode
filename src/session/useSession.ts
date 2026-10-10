@@ -35,7 +35,15 @@ export type SessionView = {
   running: boolean;
 };
 
-export function useSession(challenge: Uint8Array | null, authority: Uint8Array | null) {
+export function useSession(
+  challenge: Uint8Array | null,
+  authority: Uint8Array | null,
+  /**
+   * The miner account's stored nonce counter. The program requires every
+   * nonce to be strictly greater than it, so mining has to start above it.
+   */
+  minerNonce: bigint = 0n,
+) {
   const machine = useRef(new SessionMachine());
   const capture = useRef<Capture | null>(null);
   const mining = useRef(false);
@@ -86,7 +94,18 @@ export function useSession(challenge: Uint8Array | null, authority: Uint8Array |
     confidenceRef.current = null;
     stopRequested.current = false;
     challengeAtStart.current = challenge ? new Uint8Array(challenge) : null;
-    nonceCursor.current = BigInt(Math.floor(Math.random() * 2 ** 32));
+    // Nonces must strictly increase per miner, and the program rejects
+    // anything at or below the stored counter.
+    //
+    // A random start was below the counter roughly half the time once a
+    // wallet had mined before, so every other session failed at
+    // submission. Seeding from the counter alone is better but depends on
+    // the miner account having loaded before the session begins, which is
+    // not guaranteed. Milliseconds since the epoch is always far above any
+    // counter the chain can hold here, and always above the previous
+    // session's, so it needs no chain read to be correct.
+    nonceCursor.current =
+      minerNonce + 1n > BigInt(Date.now()) ? minerNonce + 1n : BigInt(Date.now());
 
     await activateKeepAwakeAsync('lode-session').catch(() => {});
 
@@ -106,7 +125,7 @@ export function useSession(challenge: Uint8Array | null, authority: Uint8Array |
     c.start();
     capture.current = c;
     publish();
-  }, [publish, challenge]);
+  }, [publish, challenge, minerNonce]);
 
   const stop = useCallback(() => {
     stopRequested.current = true;
@@ -117,24 +136,39 @@ export function useSession(challenge: Uint8Array | null, authority: Uint8Array |
     publish();
   }, [publish]);
 
+  /**
+   * Adopt a challenge that arrives after the session began.
+   *
+   * Requiring it at the instant Start is pressed meant one slow or
+   * rate-limited read disabled mining for the entire session, with no
+   * way to recover short of starting over. Adoption happens once, and
+   * only while nothing has been mined yet, so a mid-session rotation
+   * still cannot change what is being hashed.
+   */
+  useEffect(() => {
+    if (!view.running || !challenge) return;
+    if (challengeAtStart.current || hashCount.current > 0) return;
+    challengeAtStart.current = new Uint8Array(challenge);
+    publish();
+  }, [view.running, challenge, publish]);
+
   // Mining tick. Separate from the capture loop because it runs an order of
   // magnitude less often and must not block window processing.
   useEffect(() => {
-    // Mines against the challenge captured at start, not the live one: if
-    // the program rotates mid-session, every hash found after the rotation
-    // would be against a challenge the submission does not claim.
-    const mining_challenge = challengeAtStart.current;
-    if (!view.running || !mining_challenge || !authority) return;
+    if (!view.running || !authority) return;
 
     const id = setInterval(async () => {
       if (mining.current) return;
       const budget = machine.current.budget();
       if (budget <= 0) return;
 
+      const activeChallenge = challengeAtStart.current;
+      if (!activeChallenge) return;
+
       mining.current = true;
       try {
         const tick = await mine(
-          mining_challenge,
+          activeChallenge,
           authority,
           nonceCursor.current,
           budget,

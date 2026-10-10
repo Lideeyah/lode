@@ -99,7 +99,9 @@ console.log('  url:', BASE);
 
 // ---- Onboarding --------------------------------------------------------
 step(1, 'cold open on first run');
-await page.goto(BASE, { waitUntil: 'networkidle' });
+// Not networkidle: a live RPC connection keeps traffic flowing, so the
+// page never goes idle and the wait times out.
+await page.goto(BASE, { waitUntil: 'domcontentloaded' });
 await wait(4500);
 
 for (const label of ['Next', 'Next']) {
@@ -158,8 +160,20 @@ if (!(await sees('Session complete', 6000))) {
 console.log('       on summary:', await sees('Session complete', 3000));
 
 step(12, 'sign the effort claim and submit');
-await tapText('Sign claim and submit').catch(() => console.log('      (submit unavailable)'));
-await wait(16000);
+// The free RPC tier rate-limits under load, so a submission sometimes
+// comes back with a transport error. Retrying is exactly what a user
+// would do, and the screen is built for it: the effort is kept and the
+// button returns.
+let minted = false;
+for (let attempt = 1; attempt <= 3 && !minted; attempt++) {
+  await tapText('Sign claim and submit').catch(() => {});
+  for (let i = 0; i < 9 && !minted; i++) {
+    await wait(4000);
+    minted = await sees('Mined.', 500);
+  }
+  if (!minted) console.log(`      attempt ${attempt} did not confirm; retrying`);
+}
+console.log('       minted:', minted);
 console.log('       summary:', await readout());
 
 step(13, 'reward landing');

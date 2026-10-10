@@ -18,14 +18,14 @@ the long pauses are where the screen does the talking.
 
 ---
 
-### 0:18 — 0:30 · Connect, home at rest
+### 0:18 — 0:26 · Connect, home at rest
 
 > Connect a wallet and the instrument is idle. Flat line, nothing
 > accruing.
 
 ---
 
-### 0:30 — 0:45 · Warming
+### 0:26 — 0:35 · Warming
 
 > Start a session and Lode doesn't pay immediately. It listens first.
 >
@@ -36,7 +36,7 @@ the long pauses are where the screen does the talking.
 
 ---
 
-### 0:45 — 1:05 · Active session
+### 0:35 — 0:57 · Active session
 
 > Now it's crediting.
 >
@@ -49,7 +49,7 @@ the long pauses are where the screen does the talking.
 
 ---
 
-### 1:05 — 1:20 · Verification tab
+### 0:57 — 1:06 · Verification tab
 
 > This is the part worth watching.
 >
@@ -62,7 +62,7 @@ the long pauses are where the screen does the talking.
 
 ---
 
-### 1:20 — 1:45 · The attack  ← **the important thirty seconds**
+### 1:06 — 1:24 · The attack  ← **the important twenty seconds**
 
 > Now watch what happens when the phone is shaken instead.
 
@@ -82,14 +82,14 @@ the long pauses are where the screen does the talking.
 
 ---
 
-### 1:45 — 2:00 · Recovery
+### 1:24 — 1:44 · Recovery
 
 > Resume walking and it recovers. A traffic light shouldn't destroy your
 > session, so decay ramps over sixty seconds rather than cutting off.
 
 ---
 
-### 2:00 — 2:30 · Session summary and submission
+### 1:44 — 2:05 · Session summary and submission
 
 > End the session and you get what you did: duration, mean confidence,
 > total effort, and the best solution found.
@@ -105,7 +105,16 @@ the long pauses are where the screen does the talking.
 
 ---
 
-### 2:30 — 2:50 · The honest limit  ← **do not cut this**
+### 2:05 — 2:12 · The reward lands
+
+*(the amount arrives and the session's trace draws itself once)*
+
+> Two hundred and four tokens, for a difficulty-19 solution. That
+> number came off the chain, not out of the app.
+
+---
+
+### The honest limit  ← **say this somewhere; do not cut it**
 
 > One thing worth saying plainly.
 >
@@ -119,7 +128,7 @@ the long pauses are where the screen does the talking.
 
 ---
 
-### 2:50 — 3:00 · Close
+### 2:12 — 2:14 · History, and close
 
 > Lode. Proof of work where the scarce input is you.
 
@@ -128,7 +137,7 @@ the long pauses are where the screen does the talking.
 ## Delivery notes
 
 **Lead with the attack.** If you only get sixty seconds in front of a
-judge, play 1:20–1:45 and nothing else. It's the single most persuasive
+judge, play 1:06–1:24 and nothing else. It's the single most persuasive
 thing here and it's the question they were going to ask anyway.
 
 **Keep the honest-limit section.** Two of the seven judges are security
@@ -147,7 +156,7 @@ real outputs of the real code. Say what they are and let them stand.
 - **Simulated:** the motion input. A browser has no accelerometer, so the
   accelerometer and gyroscope stream is generated. The classifier is not
   told which mode it's in — it reads numbers and reaches its own verdict.
-- **Missing:** mining and the on-chain mint. Both need the devnet RPC,
-  which was rate-limiting this IP throughout. "Best difficulty" shows a
-  dash for that reason, not because mining is broken — the program is
-  deployed and verified working separately.
+- **Real, and on chain:** the mining and the mint. The session in this
+  recording found a difficulty-19 solution over 27,831 hashes, submitted
+  it to the deployed program on devnet, and was paid 204.80 LODE. The
+  signature on screen is a real devnet transaction you can look up.

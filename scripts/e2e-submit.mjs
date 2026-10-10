@@ -24,10 +24,14 @@ function leadingZeroBits(h) {
   return bits;
 }
 
+const KEYPAIR_PATH = process.env.LODE_KEYPAIR ?? `${process.env.HOME}/.config/solana/id.json`;
+const RPC = process.env.LODE_RPC ?? 'https://api.devnet.solana.com';
 const payer = Keypair.fromSecretKey(
-  new Uint8Array(JSON.parse(readFileSync(`${process.env.HOME}/.config/solana/id.json`, 'utf8'))),
+  new Uint8Array(JSON.parse(readFileSync(KEYPAIR_PATH, 'utf8'))),
 );
-const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
+const connection = new Connection(RPC, 'confirmed');
+console.log('rpc:', RPC.replace(/api-key=[^&]*/, 'api-key=***'));
+console.log('payer:', payer.publicKey.toBase58());
 
 const [config] = PublicKey.findProgramAddressSync([Buffer.from('config')], PROGRAM_ID);
 const [miner] = PublicKey.findProgramAddressSync(

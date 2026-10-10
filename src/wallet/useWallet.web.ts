@@ -9,8 +9,10 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Connection, Keypair, Transaction, VersionedTransaction } from '@solana/web3.js';
+import { getBlockhash } from '../chain/blockhash';
 import nacl from 'tweetnacl';
 import { RPC_ENDPOINT } from './config';
+import { Buffer } from 'buffer';
 
 const STORAGE_KEY = 'lode.web.keypair.v1';
 
@@ -28,6 +30,53 @@ function loadKeypair(): Keypair {
     // Private browsing: the key simply does not persist.
   }
   return kp;
+}
+
+/**
+ * Plain JSON-RPC sendTransaction, retried on transport failure.
+ *
+ * A single dropped connection should not cost a session: the effort is
+ * real and the solution is already found, so a transient "Failed to
+ * fetch" is worth two more attempts before telling the user it failed.
+ * Only transport errors retry — an error *response* from the node is a
+ * verdict and is surfaced immediately.
+ */
+async function sendRawViaRpc(raw: Uint8Array, attempt = 0): Promise<string> {
+  let res: Response;
+  try {
+    res = await postRpc(raw);
+  } catch (e) {
+    if (attempt < 2) {
+      await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)));
+      return sendRawViaRpc(raw, attempt + 1);
+    }
+    throw e;
+  }
+  const json = await res.json();
+  if (json.error) {
+    const logs = json.error.data?.logs;
+    const detail = Array.isArray(logs)
+      ? logs.filter((l: string) => /Error|failed/i.test(l)).slice(-2).join(' ')
+      : '';
+    throw new Error([json.error.message, detail].filter(Boolean).join(' — '));
+  }
+  return json.result as string;
+}
+
+function postRpc(raw: Uint8Array): Promise<Response> {
+  return fetch(RPC_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'sendTransaction',
+      params: [
+        Buffer.from(raw).toString('base64'),
+        { encoding: 'base64', preflightCommitment: 'confirmed' },
+      ],
+    }),
+  });
 }
 
 export function useWallet() {
@@ -69,14 +118,15 @@ export function useWallet() {
       } else {
         tx.feePayer ??= keypair.publicKey;
         if (!tx.recentBlockhash) {
-          tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+          tx.recentBlockhash = (await getBlockhash(connection)).blockhash;
         }
         tx.sign(keypair);
       }
-      return connection.sendRawTransaction(tx.serialize(), {
-        skipPreflight: false,
-        preflightCommitment: 'confirmed',
-      });
+      // Sent over plain JSON-RPC for the same reason the blockhash is
+      // fetched that way: the client library's send never settled in the
+      // browser, leaving the summary screen stuck on "submitting" with no
+      // error to show. A raw call returns, succeed or fail.
+      return sendRawViaRpc(tx.serialize());
     },
     [connection, keypair],
   );

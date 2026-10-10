@@ -8,6 +8,7 @@
 import { Transaction, PublicKey, type Connection } from '@solana/web3.js';
 import { Buffer } from 'buffer';
 import { buildSubmitInstruction, featureDigest, type EffortClaim } from './program';
+import { getBlockhash, getSlot } from './blockhash';
 
 export type ClaimPayload = EffortClaim & { authority: string };
 
@@ -69,8 +70,13 @@ export async function submitSolution(params: {
   }
 
   try {
-    const balance = await connection.getBalance(authority);
-    if (balance < 5_000) {
+    // A courtesy check, not a gate. If the balance cannot be read — a
+    // rate-limited or flaky RPC — go ahead and submit anyway: the node
+    // will reject an underfunded transaction with a clear reason, and
+    // refusing to try would throw away a real solution over a failed
+    // read.
+    const balance = await connection.getBalance(authority).catch(() => null);
+    if (balance !== null && balance < 5_000) {
       return {
         ok: false,
         reason: 'funds',
@@ -79,8 +85,10 @@ export async function submitSolution(params: {
     }
 
     const ix = buildSubmitInstruction({ authority, mint, nonce, difficulty, claim });
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-    const slot = await connection.getSlot();
+    const [{ blockhash, lastValidBlockHeight }, slot] = await Promise.all([
+      getBlockhash(connection),
+      getSlot(connection),
+    ]);
 
     const tx = new Transaction();
     tx.add(ix);
