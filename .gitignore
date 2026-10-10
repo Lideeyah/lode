@@ -39,3 +39,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# recorded demo media
+demo/*.mp4
+demo/*.webm
+demo/*.jpg

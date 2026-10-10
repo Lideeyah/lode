@@ -52,10 +52,40 @@ page.on('console', (m) => {
 });
 
 const tapText = async (text, timeout = 15000) => {
-  const el = page.getByText(text, { exact: false }).first();
+  // Prefer the real button: react-native-web wraps a Pressable's label in
+  // nested divs, so getByText().first() can land on an outer container
+  // whose click never reaches the handler.
+  // Anchored: a loose /SESSION/i also matches "End session" and "Start
+  // session", so tapping the tab bar was hitting the wrong control.
+  const exact = new RegExp(`^\\s*${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i');
+  const byRole = page.getByRole('button', { name: exact }).first();
+  const el = (await byRole.count()) > 0
+    ? byRole
+    : page.getByText(text, { exact: false }).first();
   await el.waitFor({ state: 'visible', timeout });
+  // react-native-web renders ScrollView as an overflow div, and controls
+  // below the fold are "visible" to Playwright while still off-screen, so
+  // scroll explicitly rather than trusting auto-scroll.
+  await el.scrollIntoViewIfNeeded().catch(() => {});
+  await wait(400);
   await el.tap({ force: true }).catch(async () => { await el.click({ force: true }); });
 };
+
+/**
+ * Tabs render as <a role="tab">, not buttons, so they need their own
+ * locator. Matching them by loose text instead hit "End session" and
+ * "Start session", which silently drove the wrong control.
+ */
+const tapTab = async (name, timeout = 15000) => {
+  const el = page.getByRole('tab', { name: new RegExp(`^\\s*${name}\\s*$`, 'i') }).first();
+  await el.waitFor({ state: 'visible', timeout });
+  await el.click({ force: true });
+};
+
+/** True once the given text appears, without throwing if it never does. */
+const sees = async (text, timeout = 8000) =>
+  page.getByText(text, { exact: false }).first()
+    .waitFor({ state: 'visible', timeout }).then(() => true).catch(() => false);
 
 const setMotion = (mode) => page.evaluate((m) => { window.__lodeMotion = m; }, mode);
 
@@ -100,7 +130,7 @@ console.log('       active:', await readout());
 
 // ---- Verification ------------------------------------------------------
 step(7, 'open verification tab');
-await tapText('VERIFY');
+await tapTab('VERIFY');
 await wait(9000);
 
 step(8, 'shake the phone — the classifier should reject it');
@@ -114,12 +144,18 @@ await wait(14000);
 
 // ---- Close out ---------------------------------------------------------
 step(10, 'back to session');
-await tapText('SESSION');
+await tapTab('SESSION');
 await wait(6000);
 
 step(11, 'end session');
 await tapText('End session');
-await wait(5000);
+await wait(3000);
+if (!(await sees('Session complete', 6000))) {
+  console.log('      summary did not open; retrying');
+  await tapText('End session').catch(() => {});
+  await wait(4000);
+}
+console.log('       on summary:', await sees('Session complete', 3000));
 
 step(12, 'sign the effort claim and submit');
 await tapText('Sign claim and submit').catch(() => console.log('      (submit unavailable)'));
@@ -132,7 +168,7 @@ await wait(7000);
 step(14, 'history');
 await tapText('Done').catch(() => {});
 await wait(3000);
-await tapText('HISTORY').catch(() => {});
+await tapTab('HISTORY').catch(() => {});
 await wait(6000);
 
 await context.close();
