@@ -5,6 +5,7 @@
   "dependencies": {
     "@expo-google-fonts/dm-mono": "^0.4.2",
     "@expo-google-fonts/newsreader": "^0.4.1",
+    "@expo/metro-runtime": "~57.0.16",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@solana/web3.js": "^1.99.0",
     "@wallet-ui/react-native-web3js": "^4.4.0",
@@ -22,6 +23,7 @@
     "expo-status-bar": "~57.0.1",
     "expo-updates": "~57.0.25",
     "react": "19.2.3",
+    "react-dom": "19.2.3",
     "react-native": "0.86.3",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-get-random-values": "~1.11.0",
@@ -31,7 +33,9 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
     "react-native-svg": "15.15.4",
-    "react-native-worklets": "0.10.1"
+    "react-native-web": "^0.21.2",
+    "react-native-worklets": "0.10.1",
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@types/jest": "29.5.14",
@@ -39,6 +43,7 @@
     "jest": "~29.7.0",
     "jest-expo": "~57.0.5",
     "opentype.js": "^2.0.0",
+    "playwright": "^1.64.0",
     "sharp": "^0.35.5",
     "typescript": "~6.0.3"
   },

@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useMobileWallet } from '@wallet-ui/react-native-web3js';
+import { useWallet } from '../src/wallet/useWallet';
 import { PrimaryButton, Label } from '../src/components/primitives';
 import { TracePanel } from '../src/components/TracePanel';
 import { setOnboarded } from '../src/storage';
@@ -64,10 +64,21 @@ const CARDS = [
 export default function Onboarding() {
   const { width } = useWindowDimensions();
   const router = useRouter();
-  const { connect } = useMobileWallet();
+  const { connect } = useWallet();
   const [page, setPage] = useState(0);
   const [connecting, setConnecting] = useState(false);
   const scroller = useRef<ScrollView>(null);
+
+  /**
+   * Drives the pager from state as well as from the scroll position.
+   * react-native-web never fires onMomentumScrollEnd, so relying on it
+   * alone leaves the page index stuck at zero and the button dead.
+   */
+  const goTo = (i: number) => {
+    const next = Math.max(0, Math.min(CARDS.length - 1, i));
+    setPage(next);
+    scroller.current?.scrollTo({ x: width * next, animated: true });
+  };
 
   const finish = async () => {
     await setOnboarded();
@@ -107,10 +118,13 @@ export default function Onboarding() {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={(e) =>
-          setPage(Math.round(e.nativeEvent.contentOffset.x / width))
-        }
-        style={{ flexGrow: 0 }}
+        scrollEventThrottle={32}
+        onScroll={(e) => {
+          const i = Math.round(e.nativeEvent.contentOffset.x / width);
+          if (i !== page) setPage(i);
+        }}
+        style={styles.pager}
+        contentContainerStyle={{ alignItems: 'stretch' }}
       >
         {CARDS.map((c) => (
           <View key={c.title} style={[styles.card, { width }]}>
@@ -141,10 +155,7 @@ export default function Onboarding() {
             disabled={connecting}
           />
         ) : (
-          <PrimaryButton
-            label="Next"
-            onPress={() => scroller.current?.scrollTo({ x: width * (page + 1), animated: true })}
-          />
+          <PrimaryButton label="Next" onPress={() => goTo(page + 1)} />
         )}
       </View>
     </SafeAreaView>
@@ -154,7 +165,8 @@ export default function Onboarding() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   topBar: { alignItems: 'flex-end', paddingHorizontal: space.base, paddingVertical: space.sm },
-  card: { paddingHorizontal: space.base, justifyContent: 'center', flexGrow: 1 },
+  pager: { flex: 1 },
+  card: { paddingHorizontal: space.base, justifyContent: 'center' },
   title: { ...t.screenTitle, color: color.ink },
   body: { ...t.body, color: color.muted },
   footer: { padding: space.base, gap: space.lg },

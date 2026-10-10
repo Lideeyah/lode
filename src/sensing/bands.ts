@@ -53,7 +53,7 @@ export const BANDS: Record<FeatureKey, Band> = {
   stepIntervalStd: {
     min: 0.015,
     max: 0.2,
-    softness: 0.06,
+    softness: 0.035,
     weight: 1.5,
     rationale: 'Gait repeats approximately, never exactly and never randomly.',
   },
@@ -62,7 +62,7 @@ export const BANDS: Record<FeatureKey, Band> = {
   skewness: {
     min: 0.0,
     max: 2.4,
-    softness: 0.8,
+    softness: 0.4,
     weight: 0.8,
     rationale: 'Footfalls push acceleration up more sharply than down.',
   },
@@ -74,7 +74,7 @@ export const BANDS: Record<FeatureKey, Band> = {
   kurtosis: {
     min: -1.2,
     max: 3.5,
-    softness: 1.5,
+    softness: 0.8,
     weight: 1.1,
     rationale: 'Shaking spikes much harder than a footfall does.',
   },
@@ -97,9 +97,9 @@ export const BANDS: Record<FeatureKey, Band> = {
    * breaks the coupling.
    */
   gyroAccelCorr: {
-    min: 0.1,
+    min: 0.12,
     max: 1.0,
-    softness: 0.12,
+    softness: 0.045,
     weight: 1.4,
     absolute: true,
     rationale: 'Walking couples rotation to vertical motion. Shaking does not.',

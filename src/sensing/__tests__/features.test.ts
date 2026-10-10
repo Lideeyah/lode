@@ -9,6 +9,7 @@
  */
 import { extractFeatures, dominantFrequency, correlation, motionEnergy } from '../features';
 import { scoreConfidence } from '../confidence';
+import { CONFIDENCE_THRESHOLD } from '../bands';
 import type { Sample, Window } from '../types';
 
 const RATE = 50;
@@ -156,6 +157,26 @@ describe('scoreConfidence', () => {
     expect(score(shaking()).score).toBeGreaterThan(score(stationary()).score);
   });
 
+  /**
+   * The product's central claim, and the regression that nearly shipped.
+   *
+   * Ordering alone is far too weak an assertion: shaking scored 0.74 and
+   * credited while still ranking below walking, so this test passed and
+   * the classifier was broken. What matters is which side of the
+   * threshold each lands on, so assert exactly that.
+   */
+  it('refuses to credit a shaken phone', () => {
+    const shake = score(shaking());
+    expect(shake.verified).toBe(false);
+    expect(shake.score).toBeLessThan(CONFIDENCE_THRESHOLD);
+  });
+
+  it('leaves a clear margin between walking and shaking', () => {
+    // Narrow separation means real walking will sometimes dip below the
+    // line, and real shaking will sometimes clear it.
+    expect(score(walking()).score - score(shaking()).score).toBeGreaterThan(0.3);
+  });
+
   it('refuses to credit a stationary phone', () => {
     expect(score(stationary()).verified).toBe(false);
   });
@@ -170,7 +191,10 @@ describe('scoreConfidence', () => {
     const ungated = scoreConfidence(extractFeatures(still));
     const gated = score(still);
 
-    expect(ungated.score).toBeGreaterThan(0.5);
+    // Still far from zero on shape alone — the gate is what rejects it,
+    // not the bands. Tightening the bands narrowed this but did not close
+    // it, which is precisely why the motion floor has to exist.
+    expect(ungated.score).toBeGreaterThan(0.35);
     expect(gated.score).toBe(0);
     expect(gated.explanation).toMatch(/not moving/i);
   });

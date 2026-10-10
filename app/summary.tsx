@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useMobileWallet } from '@wallet-ui/react-native-web3js';
+import { useWallet } from '../src/wallet/useWallet';
 import type { Transaction } from '@solana/web3.js';
 import { Buffer } from 'buffer';
 import {
@@ -44,7 +44,7 @@ const rewardFor = (difficulty: number) => Math.pow(2, Math.max(0, difficulty - 8
 export default function SummaryScreen() {
   const { width } = useWindowDimensions();
   const router = useRouter();
-  const { signMessage, signAndSendTransaction, connection } = useMobileWallet();
+  const { signMessage, signAndSendTransaction, connection } = useWallet();
   const { authority, challenge, refresh } = useChain();
   const { snapshot, best, trace, machine, challengeAtStart } = useSessionContext();
 

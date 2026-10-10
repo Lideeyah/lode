@@ -68,10 +68,28 @@ export function scoreConfidence(f: FeatureVector, motion?: number): Confidence {
     };
   }
 
+  /**
+   * Weighted *geometric* mean, not arithmetic.
+   *
+   * These six are signatures that must all be present together, not scores
+   * to be averaged. An arithmetic mean lets five soft passes outvote one
+   * hard failure: a shaken phone scored 0.74 and credited, because only
+   * step variance truly rejected it while the rest drifted close enough to
+   * their bands to carry it over the line. A geometric mean collapses as
+   * soon as any single signature is absent, which is the actual claim the
+   * product makes.
+   *
+   * Each term is floored so one bad feature degrades the score steeply
+   * rather than annihilating it, which keeps a momentary sensor glitch
+   * from reading as fraud.
+   */
+  const FLOOR = 0.05;
   const totalWeight = features.reduce((a, s) => a + s.band.weight, 0);
-  const score = totalWeight > 0
-    ? features.reduce((a, s) => a + s.score * s.band.weight, 0) / totalWeight
-    : 0;
+  const logSum = features.reduce(
+    (a, s) => a + s.band.weight * Math.log(Math.max(s.score, FLOOR)),
+    0,
+  );
+  const score = totalWeight > 0 ? Math.exp(logSum / totalWeight) : 0;
 
   return {
     score,

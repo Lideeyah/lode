@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useMobileWallet } from '@wallet-ui/react-native-web3js';
+import { useWallet } from '../../src/wallet/useWallet';
 import {
   PrimaryButton,
   SecondaryButton,
@@ -45,7 +45,7 @@ function duration(seconds: number): string {
 export default function SessionScreen() {
   const { width } = useWindowDimensions();
   const router = useRouter();
-  const { account, connect } = useMobileWallet();
+  const { account, connect } = useWallet();
   const { adapter, authority, balances, challenge, programReady, loading, refresh } = useChain();
   const [airdropping, setAirdropping] = useState(false);
   const session = useSessionContext();
@@ -67,14 +67,9 @@ export default function SessionScreen() {
         return;
       }
     }
-    if (!programReady) {
-      Alert.alert(
-        'Program not reachable',
-        'The Lode program has not been found on devnet. Sessions still run and record effort, but nothing can be submitted until it is deployed.',
-        [{ text: 'Start anyway', onPress: () => void session.start() }, { text: 'Cancel' }],
-      );
-      return;
-    }
+    // No modal when the program is unreachable: the card above already
+    // says so, a session still records real effort, and react-native-web
+    // does not implement Alert — which silently dead-ended the button.
     await session.start();
   };
 

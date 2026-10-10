@@ -11,7 +11,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { useMobileWallet } from '@wallet-ui/react-native-web3js';
+import { useWallet } from '../wallet/useWallet';
 import type { PublicKey } from '@solana/web3.js';
 import { ChainAdapter, type Balances, type ChallengeInfo, type MinerInfo } from './adapter';
 
@@ -30,7 +30,7 @@ type ChainState = {
 const Ctx = createContext<ChainState | null>(null);
 
 export function ChainProvider({ children }: { children: ReactNode }) {
-  const { account, connection } = useMobileWallet();
+  const { account, connection } = useWallet();
   const authority = account?.publicKey ?? null;
 
   const adapter = useMemo(
