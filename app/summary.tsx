@@ -30,6 +30,7 @@ import {
 } from '../src/components/primitives';
 import { TracePanel } from '../src/components/TracePanel';
 import { useSessionContext } from '../src/session/context';
+import { TRACE_RANGE } from '../src/session/useSession';
 import { useChain } from '../src/chain/context';
 import { encodeClaimMessage, submitSolution } from '../src/chain/submit';
 import { featureDigest } from '../src/chain/program';
@@ -178,7 +179,17 @@ export default function SummaryScreen() {
           <Readout value={amount.toFixed(2)} label="Lode mined" />
         ) : null}
 
-        <TracePanel values={shownTrace} width={panelWidth} height={140} idleMessage="No trace" />
+        {/* Capacity and range are pinned so the reward reveal draws the
+            trace in steadily instead of rescaling on every frame. */}
+        <TracePanel
+          values={shownTrace}
+          capacity={sessionTrace.length || 1}
+          range={TRACE_RANGE}
+          align="left"
+          width={panelWidth}
+          height={140}
+          idleMessage="No trace"
+        />
 
         <StatPair
           items={[

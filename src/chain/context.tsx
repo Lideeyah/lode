@@ -8,6 +8,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -48,7 +49,10 @@ export function ChainProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       const ch = await adapter.getChallenge();
-      setChallenge(ch);
+      // Never erase a known-good challenge because one read failed. A
+      // rate-limited response is not evidence the program went away, and
+      // nulling it disables submission on a session that already mined.
+      if (ch) setChallenge(ch);
       if (authority) {
         const [m, b] = await Promise.all([
           adapter.getMiner(authority),
@@ -62,26 +66,37 @@ export function ChainProvider({ children }: { children: ReactNode }) {
     }
   }, [adapter, authority]);
 
-  // Retry a failed first read. The config account is what unlocks mining,
-  // and a single rate-limited request should not cost the whole session.
+  /**
+   * Retry the first read until the config lands. The config account is
+   * what unlocks mining and submission, so one rate-limited request must
+   * not cost the session.
+   *
+   * `challenge` is deliberately read through a ref rather than listed as
+   * a dependency: depending on it re-ran this effect on every successful
+   * refresh, which triggered another refresh, which hammered the RPC
+   * until it rate-limited.
+   */
+  const haveChallenge = useRef(false);
+  haveChallenge.current = challenge !== null;
+
   useEffect(() => {
     let cancelled = false;
     let attempt = 0;
     const tick = async () => {
       if (cancelled) return;
-      await refresh();
       attempt += 1;
+      await refresh();
     };
     void tick();
     const id = setInterval(() => {
-      if (cancelled || challenge || attempt > 6) return;
+      if (cancelled || haveChallenge.current || attempt > 8) return;
       void tick();
     }, 3000);
     return () => {
       cancelled = true;
       clearInterval(id);
     };
-  }, [refresh, challenge]);
+  }, [refresh]);
 
   const value: ChainState = {
     adapter,

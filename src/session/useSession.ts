@@ -15,7 +15,17 @@ import { mine, type Solution } from '../mining/controller';
 /** How often the mining controller runs a tick. */
 const MINE_INTERVAL_MS = 10_000;
 /** Samples kept for the on-screen trace. */
-const TRACE_POINTS = 120;
+export const TRACE_POINTS = 120;
+
+/**
+ * Fixed vertical range for the live trace, in g.
+ *
+ * Acceleration magnitude sits at 1g at rest and swings either side of it
+ * while walking. Pinning the axis means the waveform stays put and the
+ * signal moves within it; deriving the range per frame makes the whole
+ * trace jump whenever a new peak arrives.
+ */
+export const TRACE_RANGE = { min: 0.2, max: 2.2 };
 
 export type SessionView = {
   snapshot: SessionSnapshot;
@@ -218,5 +228,12 @@ export function useSession(
     };
   }, []);
 
-  return { ...view, start, stop, machine: machine.current };
+  /**
+   * Read the trace directly, without going through component state. The
+   * panel polls this so the waveform can advance at its own rate instead
+   * of lurching forward once a second when the screen republishes.
+   */
+  const readTrace = useCallback(() => traceRef.current, []);
+
+  return { ...view, start, stop, readTrace, machine: machine.current };
 }

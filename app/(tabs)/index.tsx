@@ -29,6 +29,7 @@ import {
 } from '../../src/components/primitives';
 import { TracePanel } from '../../src/components/TracePanel';
 import { useSessionContext } from '../../src/session/context';
+import { TRACE_POINTS, TRACE_RANGE } from '../../src/session/useSession';
 import { useChain } from '../../src/chain/context';
 import { STATE_LABELS } from '../../src/session/machine';
 import { WARMING_WINDOWS } from '../../src/sensing/bands';
@@ -50,7 +51,7 @@ export default function SessionScreen() {
   const [airdropping, setAirdropping] = useState(false);
   const session = useSessionContext();
 
-  const { snapshot, confidence, trace, budget, best, running } = session;
+  const { snapshot, confidence, budget, best, running, readTrace } = session;
   const panelWidth = width - space.base * 2;
 
   const confidenceText = useMemo(
@@ -181,7 +182,13 @@ export default function SessionScreen() {
 
         <Readout value={confidenceText} label="Confidence" />
 
-        <TracePanel values={trace} width={panelWidth} height={140} />
+        <TracePanel
+          source={readTrace}
+          capacity={TRACE_POINTS}
+          range={TRACE_RANGE}
+          width={panelWidth}
+          height={140}
+        />
 
         {warming ? (
           <Card>
@@ -194,9 +201,13 @@ export default function SessionScreen() {
           </Card>
         ) : null}
 
-        {confidence && !warming ? (
-          <Text style={styles.body}>{confidence.explanation}</Text>
-        ) : null}
+        {/* Fixed height: the sentence changes once a second and its
+            length varies, which shunted every figure below it. */}
+        <View style={styles.explanation}>
+          {confidence && !warming ? (
+            <Text style={styles.body}>{confidence.explanation}</Text>
+          ) : null}
+        </View>
 
         <StatPair
           items={[
@@ -233,4 +244,5 @@ const styles = StyleSheet.create({
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   title: { ...t.screenTitle, color: color.ink },
   body: { ...t.body, color: color.muted },
+  explanation: { minHeight: 75, justifyContent: 'flex-start' },
 });
