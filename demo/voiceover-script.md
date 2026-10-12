@@ -1,162 +1,166 @@
 # Lode — demo voiceover
 
-Three minutes. Timings match `lode-demo.mp4`. Read at an unhurried pace;
-the long pauses are where the screen does the talking.
+Timed to `lode-demo.mp4` (2:13). **219 spoken words**, about 99
+words per minute — slow enough to sound unhurried and to leave the screen
+room to do its own work.
+
+Each section shows its window, its word budget, and the words. If you add a
+sentence, cut one. The silences marked are deliberate; they are where the
+numbers on screen are the argument.
 
 ---
 
-### 0:00 — 0:18 · Cold open, onboarding
+### 0:00 – 0:14 · Onboarding — 28 words
 
-> Most crypto mining spends electricity. Lode spends effort.
+> Bitcoin mining spends electricity.
 >
-> Your phone only searches for a solution while it can verify that a real
-> person is walking. Walk longer, and it's allowed to search harder.
+> Lode spends effort.
 
-*(pause through card two)*
+*(let card two land)*
 
-> The hard part isn't the mining. It's proving the movement is real.
-
----
-
-### 0:18 — 0:26 · Connect, home at rest
-
-> Connect a wallet and the instrument is idle. Flat line, nothing
-> accruing.
+> Your phone only mines while it can prove a real person is walking. The
+> hard part was never the mining. It's proving the movement.
 
 ---
 
-### 0:26 — 0:35 · Warming
+### 0:14 – 0:18 · Connect — 4 words
 
-> Start a session and Lode doesn't pay immediately. It listens first.
->
-> Five consecutive windows have to clear the threshold before anything
-> accrues. Most products would hide this step. Showing it is the point —
-> it's what tells you the verification is real before you've any reason
-> to trust it.
+> Connect a wallet.
 
 ---
 
-### 0:35 — 0:57 · Active session
+### 0:18 – 0:24 · At rest — 9 words
+
+> Nothing running. Flat line. The instrument is idle.
+
+---
+
+### 0:24 – 0:33 · Warming — 17 words
+
+> Start a session and it listens before it pays. Five clean windows before
+> anything accrues.
+
+---
+
+### 0:33 – 0:53 · Crediting — 42 words
 
 > Now it's crediting.
->
-> Confidence updates once a second. The trace is live accelerometer
-> magnitude. And the iteration budget — that number climbing — is how
-> hard the phone is permitted to hash right now.
->
-> That's the whole mechanic in one figure. Keep moving and it climbs.
-> Stop, and it decays to zero inside a minute.
+
+*(2 second pause)*
+
+> Confidence updates once a second. The trace is live accelerometer data.
+
+*(2 second pause)*
+
+> And the iteration budget — that climbing number — is how hard the phone
+> is allowed to hash. Keep walking and it climbs.
 
 ---
 
-### 0:57 — 1:06 · Verification tab
+### 0:53 – 1:02 · Verification — 17 words
 
-> This is the part worth watching.
->
-> Six signals, live, each against the band it has to sit inside.
-> Cadence. How much your stride varies. Skew and kurtosis of the
-> acceleration. Orientation drift. And the coupling between rotation and
-> vertical motion — because a walking body rotates as it steps.
->
-> All six inside. Ninety-eight confidence.
+> Six signals, live. Each one against the band it has to sit inside.
+
+*(pause)*
+
+> All six inside.
 
 ---
 
-### 1:06 — 1:24 · The attack  ← **the important twenty seconds**
+### 1:02 – 1:20 · The shake  ← **the moment** — 23 words
 
-> Now watch what happens when the phone is shaken instead.
+> Now watch a shake instead of a walk.
 
-*(let it run — say nothing for ~6 seconds)*
+*(SILENCE — at least 6 seconds. Let the bars fall out on their own.)*
 
-> Step variance goes out of range. Gyro correlation collapses to near
-> zero — there's no rotation, because nothing is walking. Kurtosis falls
-> out, skew falls out.
->
-> Confidence drops to twenty-eight. The session moves to decaying and
-> stops crediting.
->
-> This is the answer to the only hard question anyone asks about this
-> product. The six signals aren't averaged — they're combined so that
-> any one of them going missing collapses the score. You can't fake five
-> and carry the sixth.
+> Gyro coupling collapses. Step variance goes out. It stops crediting.
 
 ---
 
-### 1:24 — 1:44 · Recovery
+### 1:20 – 1:34 · Recovery — 24 words
 
-> Resume walking and it recovers. A traffic light shouldn't destroy your
-> session, so decay ramps over sixty seconds rather than cutting off.
+> Walk again and it recovers.
 
----
+*(pause)*
 
-### 1:44 — 2:05 · Session summary and submission
-
-> End the session and you get what you did: duration, mean confidence,
-> total effort, and the best solution found.
->
-> Then two things touch the chain. You sign an effort claim — free,
-> instant, no transaction. On a Seeker that routes through Mobile Wallet
-> Adapter to the Seed Vault Wallet.
->
-> Then you submit. The program recomputes the hash itself, counts the
-> leading zero bits, rejects a reused nonce, and mints scaled to the
-> difficulty you actually achieved. It doesn't take the client's word
-> for any of it.
+> Decay ramps over a minute, so stopping at a traffic light doesn't destroy
+> your session.
 
 ---
 
-### 2:05 — 2:12 · The reward lands
+### 1:34 – 1:44 · Ending — 18 words
 
-*(the amount arrives and the session's trace draws itself once)*
+> End the session.
 
-> Two hundred and four tokens, for a difficulty-19 solution. That
-> number came off the chain, not out of the app.
+*(pause)*
 
----
-
-### The honest limit  ← **say this somewhere; do not cut it**
-
-> One thing worth saying plainly.
->
-> The chain verifies the hash and the signature. It cannot verify the
-> gait classification, because on-chain verification of sensor data
-> isn't possible. The classifier runs on the device, and the program
-> trusts it.
->
-> Hardware attestation — proving the binary is unmodified — is the step
-> that closes that gap, and it's the next thing we'd build.
+> Sign the effort claim. Free, instant, no transaction.
 
 ---
 
-### 2:12 — 2:14 · History, and close
+### 1:44 – 1:50 · Submit — 15 words
+
+> Then submit. The program recomputes the hash itself and counts the
+> leading zeros.
+
+---
+
+### 1:50 – 1:58 · Reward — 13 words
+
+> Difficulty twenty-two. Sixteen hundred tokens.
+
+*(pause)*
+
+> That number came off the chain.
+
+---
+
+### 1:58 – 2:13 · The honest note, and close — 37 words
+
+> One thing worth saying. The chain verifies the hash, not the gait. The
+> classifier runs on the device. Hardware attestation closes that gap, and
+> it's next.
+
+*(pause)*
 
 > Lode. Proof of work where the scarce input is you.
 
 ---
 
+## If you need it shorter still
+
+Cut these three in order. Each is self-contained and nothing downstream
+depends on it:
+
+1. **Recovery (1:20)** — 24 words. Nice, not essential.
+2. **At rest (0:18)** — 9 words. The screen already says "instrument idle".
+3. **The second half of Crediting** — the trace sentence. The budget line is
+   the one that matters.
+
+That takes you to 200 words, about 90wpm, which is very relaxed.
+
 ## Delivery notes
 
-**Lead with the attack.** If you only get sixty seconds in front of a
-judge, play 1:06–1:24 and nothing else. It's the single most persuasive
-thing here and it's the question they were going to ask anyway.
+**Do not fill the silence at 1:02.** Six seconds of nothing while the bars
+drop out of their bands is the most persuasive thing in the video. Talking
+over it is the single easiest way to waste it.
 
-**Keep the honest-limit section.** Two of the seven judges are security
-researchers. A judge who finds that gap themselves has caught you out; a
-judge who hears you name it has been handed the most interesting slide in
-your deck. Cutting it to save ten seconds is the worst trade available.
+**If you only get 30 seconds with a judge**, play 1:02 to 1:20 and say the
+shake line. Nothing else.
 
-**Don't oversell the numbers.** Confidence figures and difficulty are
-real outputs of the real code. Say what they are and let them stand.
+**Keep the honest note.** Two of the seven judges are security researchers.
+It is 37 words and it is the difference between being caught and being
+ahead of them.
 
-## What this recording does and does not show
+**Numbers are read as words**: "difficulty twenty-two", "sixteen hundred
+tokens". Don't read 1,638.40 aloud — it's on screen, and saying it costs
+four seconds you don't have.
 
-- **Real:** the app, the design, the feature extraction, the confidence
-  scoring, the state machine, the rejection of shaking. All of it is the
-  shipped code path.
+## What this recording shows
+
+- **Real:** the app, the classifier, the scoring, the mining, and the
+  on-chain transaction. Difficulty 22 across 250,618 hashes, paid 1,638.40
+  LODE on devnet. The signature on screen is verifiable.
 - **Simulated:** the motion input. A browser has no accelerometer, so the
-  accelerometer and gyroscope stream is generated. The classifier is not
-  told which mode it's in — it reads numbers and reaches its own verdict.
-- **Real, and on chain:** the mining and the mint. The session in this
-  recording found a difficulty-19 solution over 27,831 hashes, submitted
-  it to the deployed program on devnet, and was paid 204.80 LODE. The
-  signature on screen is a real devnet transaction you can look up.
+  sensor stream is generated. The classifier is not told which mode it is
+  in; it reads numbers and reaches its own verdict.
