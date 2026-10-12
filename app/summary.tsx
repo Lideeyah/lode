@@ -258,21 +258,15 @@ export default function SummaryScreen() {
     /**
      * The claim signature is collected *after* the transaction, not before.
      *
-     * Every wallet call in Mobile Wallet Adapter opens its own association
-     * — signMessages, signTransactions and signAndSendTransactions each
-     * wrap themselves in a separate `transact`. Only one association may
-     * be open at a time, and teardown is not instant.
+     * Each method on the wallet hook wraps its own association, only one
+     * may be open at a time, and teardown is not instant. Asking for the
+     * claim signature first therefore put an association in front of the
+     * one that matters, and the submission could be refused for no reason
+     * other than arriving while that one was still closing.
      *
-     * Phantom does not implement sign_messages, so asking for the claim
-     * signature first opened an association, failed, and tore down; the
-     * submission then tried to associate on top of that and was refused
-     * with ERROR_AUTHORIZATION_FAILED — the wallet opening, authenticating
-     * and returning with no prompt. A step that was meant to be harmless
-     * was breaking the one that mattered.
-     *
-     * The submission goes first now, alone. The claim is already bound to
-     * this wallet by the transaction signature, so the message signature
-     * is corroboration and can be collected afterwards, or not at all.
+     * Ordering it second costs nothing, because the transaction signature
+     * already binds the claim to this wallet. The message signature is
+     * corroboration, and a wallet that declines it loses us nothing.
      */
     setStage('submitting');
     const outcome = await submitSolution({
@@ -288,18 +282,16 @@ export default function SummaryScreen() {
     });
 
     /**
-     * No retry here any more.
+     * No retry on a declined authorization.
      *
-     * There used to be one: on -1 it disconnected, waited, reconnected and
-     * ran the submission again. It could never help, because the -1 it was
-     * reacting to came from the submission opening a second association on
-     * top of its own first one, and running the submission again just did
-     * that twice more. It also cost the user two extra wallet trips before
-     * showing the same error.
+     * There was one, and it could not help: it reacted to a -1 that the
+     * submission produced itself by opening a second association, so
+     * re-running the submission simply produced two more. It cost the
+     * user two extra wallet trips to arrive at the same error.
      *
-     * The collision is gone and the association is authorised fresh, so a
-     * -1 that reaches here now means the wallet genuinely declined. That is
-     * the user's answer to give, not something to retry around.
+     * With the collision gone and the association authorised fresh, a -1
+     * here means the wallet declined. That is an answer to show, not one
+     * to retry around.
      */
 
     if (outcome.ok) {

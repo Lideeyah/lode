@@ -144,35 +144,22 @@ export async function submitSolution(params: {
     /**
      * One association, both attempts inside it.
      *
-     * This is where every submission was failing. `signAndSend` and the
-     * sign-only fallback each used to come from the wallet hook, and each
-     * of those opens its own Mobile Wallet Adapter association. The
-     * fallback fired the instant the primary rejected, so it tried to
-     * associate while the first association was still tearing down —
-     * only one may be open at a time — and was refused with
-     * ERROR_AUTHORIZATION_FAILED. The wallet opened, authenticated and
-     * returned with no approval sheet, because the sheet belonged to a
-     * session that no longer existed.
-     *
-     * The -1 from that doomed second association was also what the retry
-     * in app/summary.tsx matched on, so the retry re-ran this function
-     * and made the same pair of back-to-back associations. The path could
-     * not succeed, however many times it was tried.
-     *
-     * Now the caller opens one association, authorises it once, and both
-     * attempts happen inside it. The fallback costs no wallet round trip
-     * and cannot collide with anything.
+     * Mobile Wallet Adapter permits one association at a time and teardown
+     * is not instant, so a fallback that opens its own is refused with
+     * ERROR_AUTHORIZATION_FAILED while the first is still closing — and
+     * the wallet has no live session left to draw an approval sheet on.
+     * Taking the sign-only and sign-and-send attempts from the wallet hook
+     * did exactly that, because each of its methods wraps its own
+     * association. Both attempts belong inside the one the caller opens.
      *
      * minContextSlot is 0 deliberately: it means "no constraint". Passing
      * a slot read from our own RPC asks the wallet's node to have caught
      * up to it, and a wallet whose node lags then refuses.
      */
     const signature = await withWallet(async (w) => {
-      // Ask the wallet which methods it has rather than inferring it from
-      // a failure. An earlier note in this file concluded that Phantom
-      // does not implement sign_transactions; that was read off a failure
-      // which actually happened during authorization, before any signing
-      // was attempted, so it was never evidence of anything.
+      // Ask the wallet which methods it implements rather than inferring
+      // it from a failure: a refusal during authorization says nothing
+      // about which signing methods the wallet supports.
       const caps = await w
         .capabilities()
         .catch(() => ({ signTransactions: true, signAndSend: true }));
