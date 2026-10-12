@@ -63,6 +63,19 @@ feel — use them consistently.
   border and faint vertical gridlines. Radius 0 — an instrument window is
   rectangular, never rounded.
 
+## Screenshots
+
+Phone captures are 412 x 915 at 2x — tall and narrow, aspect 0.45.
+
+They are evidence, not decoration, and the headline stays the largest
+thing on any slide carrying them. Keep them to a single row, equal height,
+no more than 60% of the slide, with a 1px `rule` hairline and an uppercase
+mono caption beneath each.
+
+Never add a device frame, a drop shadow, a tilt, a rounded corner or a
+tinted panel behind them. The whole value of an unretouched capture is
+that it looks unretouched.
+
 ## Motion
 
 None. If the deck is presented live, no builds, no transitions beyond a cut.

@@ -236,9 +236,39 @@ Four states from one session, left to right.
 | `08-verification-shake-rejected.png` | **Shaken instead of walked.** Confidence 33, rotation coupling collapsed to 0.064, no longer crediting. |
 | `11-reward-minted-on-devnet.png` | **Paid.** 12.80 LODE and a devnet signature. |
 
-**Visual:** the four screens in a row at equal height, uppercase mono
-caption beneath each. No device frames, no drop shadows, no angles — the
-screens are already the right shape.
+**Visual direction — follow this closely.** The screens are evidence, not
+decoration. They should sit quietly under the headline and be legible if
+someone leans in, without becoming the slide.
+
+Each file is 412 x 915 at 2x, so the aspect is 0.45 — tall and narrow.
+Four of them in a row is a wide, short band, which is exactly the shape
+that stays out of the way.
+
+- **One row, four screens, equal height.** Never a 2x2 grid: that doubles
+  the vertical mass and swamps the headline.
+- **Height no more than 60% of the slide.** On a 1080-tall slide that is
+  about 620px, making each screen roughly 280 wide. Four of those plus
+  gaps comes to about 1,350 of a 1,660 content width, so the row sits
+  comfortably inside the margins with air either side.
+- **Vertically centred in the space below the headline**, not pushed to
+  the bottom edge. Leave the normal 24pt gap under the headline.
+- **Gap between screens equal to one gutter**, around 50 to 60px. Even
+  spacing, no overlap, no fanning.
+- **Caption beneath each**, uppercase mono, 12pt, `muted`, left-aligned to
+  its own screen. Two or three words: `WARMING`, `CREDITING`, `SHAKEN`,
+  `PAID`.
+- **A 1px `rule` hairline around each screenshot**, nothing more. It makes
+  them read as captured artifacts rather than images floating on the page,
+  and matches every other border in the deck.
+
+**Do not:** add device frames or phone mockups, add drop shadows or glows,
+tilt or fan them at angles, crop them, round the corners, overlap them,
+scale them to different sizes, or put them on a tinted panel. Every one of
+those reads as decoration, and the point of the slide is that these are
+unretouched captures.
+
+The headline stays the largest thing on the slide. If the screens are
+competing with it, they are too big.
 
 **Note:** these are the numbers on slide 9, which is why that slide uses
 this session rather than a larger one from a different run. The full set
