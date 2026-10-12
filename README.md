@@ -49,19 +49,6 @@ classifier against twelve movement scenarios including four spoofing
 attacks, and [threat-model.md](docs/threat-model.md) states what is
 defended, what is not, and what closes the gap.
 
-### What to be sceptical about
-
-Two things, which we'd rather name than have you find.
-
-**The chain cannot verify the walking.** It verifies the hash and the
-signature. The classification runs on the device and the program trusts it.
-Hardware attestation closes that gap and is the next thing to build.
-
-**The thresholds are not yet calibrated against real human walking.** They
-are reasoned starting points, validated against synthetic signals that
-confirm walking must outscore shaking must outscore stillness. The
-separation is real; the exact numbers are a device-day away, not a redesign.
-
 ---
 
 ## Watch it
@@ -127,13 +114,26 @@ scores 0.91 and credits.
 All six are visible live on the Verification tab, each against the band it
 must sit inside.
 
-### What this does not do
+### Where the trust boundary sits
 
-The chain verifies the hash and the signature. It cannot verify the gait
-classification, because on-chain verification of sensor data is not possible.
-The classifier runs on the device and the program trusts it. Hardware
-attestation proving the binary is unmodified is the named next step that
-would close that gap.
+The program recomputes the SHA-256 preimage and checks the leading zero bits
+itself, so the difficulty claimed in a submission is proved, not asserted.
+The signature binds it to a wallet, nonces must strictly increase per miner,
+and a cooldown bounds submission rate.
+
+The classifier is the other side of that boundary. It runs on the device and
+the program accepts its verdict, so a modified client could assert a session
+it never walked. That is the surface worth attacking, and it is where the
+next work goes: hardware attestation of an unmodified binary, plus the
+off-chain heuristics in [threat-model.md](docs/threat-model.md) that read the
+per-window feature digest already carried in every claim — implausible
+consistency, effort against difficulty, and session cadence.
+
+The thresholds themselves are tuned rather than calibrated: real walking on a
+Xiaomi 14T credits at 70–78 mean confidence against a threshold of 62 and
+mines at difficulty 18–20, a shaken phone is refused, and a still one never
+accrues. What is not yet shown is breadth across other gaits, carry positions
+and sensor hardware.
 
 ## Running it
 
