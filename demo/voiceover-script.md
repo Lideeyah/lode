@@ -73,7 +73,7 @@ numbers on screen are the argument.
 
 *(SILENCE — at least 6 seconds. Let the bars fall out on their own.)*
 
-> Gyro coupling collapses. Step variance goes out. It stops crediting.
+> The rotation signal collapses. Step variance goes out. It stops crediting.
 
 ---
 
