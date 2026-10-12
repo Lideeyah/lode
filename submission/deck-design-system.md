@@ -1,6 +1,8 @@
 # Deck design system
 
-Feed this to Claude Design with the content document.
+Feed this to Claude Design with `deck-content.md`, which is the only deck
+content document — it now carries all 16 slides including the retention
+and UX slides that were previously separate.
 
 The deck uses the product's own design language. A deck that looks like the
 app is doing free work: by slide three a judge recognises the typeface and
