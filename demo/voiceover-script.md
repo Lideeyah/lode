@@ -1,6 +1,6 @@
 # Lode — demo voiceover
 
-Timed to `lode-demo.mp4` (2:13). **219 spoken words**, about 99
+Timed to `lode-demo.mp4` (2:13). **214 spoken words**, about 97
 words per minute — slow enough to sound unhurried and to leave the screen
 room to do its own work.
 
@@ -115,11 +115,10 @@ numbers on screen are the argument.
 
 ---
 
-### 1:58 – 2:13 · The honest note, and close — 37 words
+### 1:58 – 2:13 · The honest note, and close — 29 words
 
-> One thing worth saying. The chain verifies the hash, not the gait. The
-> classifier runs on the device. Hardware attestation closes that gap, and
-> it's next.
+> The chain verifies the hash, not the gait — that runs on the device.
+> Hardware attestation closes it. That's next.
 
 *(pause)*
 
@@ -148,9 +147,9 @@ over it is the single easiest way to waste it.
 **If you only get 30 seconds with a judge**, play 1:02 to 1:20 and say the
 shake line. Nothing else.
 
-**Keep the honest note.** Two of the seven judges are security researchers.
-It is 37 words and it is the difference between being caught and being
-ahead of them.
+**Keep the honest note.** Two of the seven judges are security researchers,
+and the gap is visible to anyone who reads the program. Nineteen words, and
+it is the difference between being caught and being ahead of them.
 
 **Numbers are read as words**: "difficulty twenty-two", "sixteen hundred
 tokens". Don't read 1,638.40 aloud — it's on screen, and saying it costs
