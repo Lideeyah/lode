@@ -103,6 +103,28 @@ LIVE VERIFICATION SCREEN
 All six signals shown live against the bands they must sit inside, so the
 classification is inspectable rather than asserted. Shake the phone and you
 watch them fall out of range.
+
+MEASURED, NOT ASSERTED
+The classifier is characterised against twelve movement scenarios as a
+test, so an attack that starts crediting fails the build: walking at four
+cadences and carry positions, running, hand shaking, a slow shake faked at
+walking cadence, a swinging bag, a vehicle, a mounted phone, and two kinds
+of stillness. Zero false positives, zero false negatives, separation 0.501
+between the worst human case and the best attack.
+
+That suite immediately found a real hole. A slow rhythmic shake at walking
+cadence scored 0.689 and credited — it matches walking on frequency, skew,
+drift and step variance, and fails only on rotation coupling, which read
+0.06 against 0.997 for a real walk. The feature discriminated perfectly
+and the combination ignored it, because one failing signal could not
+outvote five passing ones. Weighting that signal from a sweep takes the
+attack to 0.494 against a 0.62 threshold with every modelled walk still
+above 0.99.
+
+Full table, the weight sweep, and what synthetic scenarios cannot
+establish: docs/classifier-robustness.md
+What is defended, what is not, and what closes the gap:
+docs/threat-model.md
 ```
 
 ---
@@ -120,10 +142,16 @@ I do not own a Seeker, so I have not run this on the device and will not
 claim it as tested. What is true is that the app uses the standard MWA
 interface that Seed Vault implements.
 
+So the accurate description is: an MWA-compatible Android app, pending
+Seeker validation. Not a Seed Vault integration we have run.
+
 Seeker is also where this product's open problem closes. Lode's constraint
 is that the gait classifier runs on the device and the chain has to trust
-it. Hardware attestation is what would close that gap, and a phone with a
-secure element is the natural place for it.
+it — a modified client can mint without walking, and nothing on chain can
+tell it from an honest one. Hardware attestation is what closes that gap,
+and a phone with a secure element is the natural place for it. That is
+written up in full in docs/threat-model.md rather than left for a reviewer
+to discover.
 ```
 
 ---
@@ -168,8 +196,25 @@ unlike an EAS artifact link, which expires after about thirty days.
 
 ---
 
+## What changed after the AI Coach review
+
+The coach scored 70/100 and listed six fixes. Where each stands:
+
+| # | Fix | Status |
+|---|---|---|
+| 1 | Verifiable repository evidence | **Paste the repo URL into the form** — it was absent, so `CODE: NONE` and a whole evidence category scored zero |
+| 2 | Close or narrow the client-trust gap | `docs/threat-model.md` — what is defended with measurements, what is not, how fraud would be detected, what attestation closes |
+| 3 | Prove classifier robustness | `docs/classifier-robustness.md` — twelve scenarios, 0 false positives, 0 false negatives, and a real attack found and fixed |
+| 4 | Retention and token utility | Two new deck slides, with figures that survive an explorer check |
+| 5 | More UX surface area | Screenshots — in progress |
+| 6 | Test on Seeker or label as generic Android | SKR answer now says "MWA-compatible Android, pending Seeker validation" |
+
+Item 1 is the cheapest and the largest. The coach read the writeup, the
+deck and the demo, and explicitly could not read any code.
+
 ## Checklist before submitting
 
+- [ ] **Repository URL pasted in** — this was missing when the coach ran
 - [ ] Demo video set to **Public**
 - [ ] APK link opened once on a phone to confirm it downloads
 - [ ] Repo loads while logged out
