@@ -8,6 +8,7 @@ import { useRef, useState } from 'react';
 import {
   View,
   Text,
+  Image,
   ScrollView,
   StyleSheet,
   useWindowDimensions,
@@ -105,7 +106,16 @@ export default function Onboarding() {
 
   return (
     <SafeAreaView style={styles.screen}>
+      {/* The name belongs here: Android 12 masks the splash icon to a
+          circle, so a wordmark cannot survive on the splash at any size.
+          This is the first thing after it. */}
       <View style={styles.topBar}>
+        <Image
+          source={require('../assets/lockup.png')}
+          style={styles.lockup}
+          resizeMode="contain"
+          accessibilityLabel="Lode"
+        />
         <Pressable onPress={finish} hitSlop={16} accessibilityRole="button">
           <Label>Skip</Label>
         </Pressable>
@@ -179,7 +189,14 @@ export default function Onboarding() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
-  topBar: { alignItems: 'flex-end', paddingHorizontal: space.base, paddingVertical: space.sm },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: space.base,
+    paddingVertical: space.md,
+  },
+  lockup: { width: 104, height: 26 },
   pager: { flex: 1 },
   card: { paddingHorizontal: space.base, justifyContent: 'center' },
   title: { ...t.screenTitle, color: color.ink },

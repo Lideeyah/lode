@@ -22,10 +22,10 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/splash-lockup.png",
+          "image": "./assets/splash-icon-square.png",
           "resizeMode": "contain",
           "backgroundColor": "#F2EEE4",
-          "imageWidth": 240
+          "imageWidth": 180
         }
       ],
       "expo-router",
