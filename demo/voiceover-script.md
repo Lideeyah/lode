@@ -1,6 +1,6 @@
 # Lode — demo voiceover
 
-Timed to `lode-demo.mp4` (2:13). **214 spoken words**, about 97
+Timed to `lode-demo.mp4` (2:13). **217 spoken words**, about 98
 words per minute — slow enough to sound unhurried and to leave the screen
 room to do its own work.
 
@@ -115,10 +115,10 @@ numbers on screen are the argument.
 
 ---
 
-### 1:58 – 2:13 · The honest note, and close — 29 words
+### 1:58 – 2:13 · The honest note, and close — 32 words
 
-> The chain verifies the hash, not the gait — that runs on the device.
-> Hardware attestation closes it. That's next.
+> One honest note. The chain verifies the hash, not the gait — that runs
+> on the device. Hardware attestation closes it. That's next.
 
 *(pause)*
 
@@ -148,8 +148,12 @@ over it is the single easiest way to waste it.
 shake line. Nothing else.
 
 **Keep the honest note.** Two of the seven judges are security researchers,
-and the gap is visible to anyone who reads the program. Nineteen words, and
-it is the difference between being caught and being ahead of them.
+and the gap is visible to anyone who reads the program. Twenty-two words,
+and it is the difference between being caught and being ahead of them.
+
+The three-word signpost earns its place: without it the sentence sounds
+like more description, and a listener may not register that you raised the
+weakness yourself. That framing is the entire reason to say it.
 
 **Numbers are read as words**: "difficulty twenty-two", "sixteen hundred
 tokens". Don't read 1,638.40 aloud — it's on screen, and saying it costs
