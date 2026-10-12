@@ -94,6 +94,14 @@ Effort claims are signed through MWA as a human-readable message, separate
 from the submission transaction, which is signed and sent through the same
 wallet.
 
+VERIFIED APP IDENTITY
+Mobile Wallet Adapter verifies an app by resolving the origin of its
+identity URI and reading that origin's Digital Asset Links file, which must
+name the Android package and signing certificate. Lode publishes that
+association at https://lideeyah.github.io/.well-known/assetlinks.json for
+package com.lideeyah.lode, so wallets can confirm the app is what it claims
+to be rather than warning that it may be impersonating another app.
+
 ANCHOR PROGRAM ON DEVNET
 Recomputes sha256(challenge || authority || nonce), counts leading zero
 bits, rejects anything below the claimed difficulty, rejects reused nonces,
@@ -213,16 +221,20 @@ The coach scored 70/100 and listed six fixes. Where each stands:
 
 | # | Fix | Status |
 |---|---|---|
-| 1 | Verifiable repository evidence | Repo URL submitted and the advisory audit run against it — that audit is what fills the code-evidence slot, not the URL field |
+| 1 | Verifiable repository evidence | Repo submitted and audited; the audit is what fills the code-evidence slot, not the URL field |
+| 1b | Remove leaked secret handling | Fixed — both capture scripts no longer write key bytes to browser storage; they start each run with a fresh unfunded devnet wallet |
 | 2 | Close or narrow the client-trust gap | `docs/threat-model.md` — what is defended with measurements, what is not, how fraud would be detected, what attestation closes |
 | 3 | Prove classifier robustness | `docs/classifier-robustness.md` — twelve scenarios, 0 false positives, 0 false negatives, and a real attack found and fixed |
 | 4 | Retention and token utility | Two new deck slides, with figures that survive an explorer check |
 | 5 | More UX surface area | Twelve screens in `docs/screenshots/`, written up in `docs/ux-walkthrough.md`, four of them on a deck slide |
 | 6 | Test on Seeker or label as generic Android | SKR answer now says "MWA-compatible Android, pending Seeker validation" |
 
-All six are addressed. The audit returned 28 findings; two were acted on
-— the repository is now MIT licensed, and the web build's use of browser
-storage for a throwaway devnet key is documented at the point it happens.
+All six are addressed, and the follow-up review scored the submission
+80/100, top quartile of 194 teams, with every criterion above median.
+The audit returned 28 findings; three were acted on
+— the repository is now MIT licensed, the capture scripts no longer write
+key material to browser storage, and the web build's own use of it for a
+throwaway devnet key is documented at the point it happens.
 The rest are false positives with stated reasons, or accepted dependency
 advisories inherited from Expo and web3.js. That triage is in
 docs/security-audit-response.md.
