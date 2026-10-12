@@ -17,7 +17,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useWallet } from '../src/wallet/useWallet';
-import type { Transaction } from '@solana/web3.js';
 import { Buffer } from 'buffer';
 import {
   PrimaryButton,
@@ -32,7 +31,8 @@ import { TracePanel } from '../src/components/TracePanel';
 import { useSessionContext } from '../src/session/context';
 import { TRACE_RANGE } from '../src/session/useSession';
 import { useChain } from '../src/chain/context';
-import { encodeClaimMessage, submitSolution } from '../src/chain/submit';
+import { encodeClaimMessage, submitSolution, type WalletOps } from '../src/chain/submit';
+import type { Web3MobileWallet } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
 import { featureDigest } from '../src/chain/program';
 import { downsampleTrace, saveSession, summariseFeatures, updateSession } from '../src/storage';
 import { color, space, type as t } from '../src/theme/tokens';
@@ -47,11 +47,10 @@ export default function SummaryScreen() {
   const router = useRouter();
   const {
     signMessage,
-    signTransaction,
-    signAndSendTransaction,
-    connect,
-    disconnect,
+    connectAnd,
     connection,
+    chain,
+    identity,
   } = useWallet();
   const { authority, challenge, refresh } = useChain();
   const { snapshot, best, trace, machine, challengeAtStart } = useSessionContext();
@@ -113,6 +112,65 @@ export default function SummaryScreen() {
     return () => clearInterval(id);
   }, [stage, sessionTrace.length]);
 
+  /**
+   * One Mobile Wallet Adapter association, authorised once, handed to the
+   * submission to do all of its signing inside.
+   *
+   * Two things here are deliberate.
+   *
+   * First, the association is opened here rather than per operation. The
+   * wallet hook's `signTransaction` and `signAndSendTransaction` each open
+   * their own, and the submission needed two of them back to back, which
+   * cannot work: only one association may be open at a time and teardown
+   * is not instant. See the signing block in chain/submit.ts.
+   *
+   * Second, `authorize` is called with no `auth_token`. The hook's own
+   * authorise always replays the token cached at connect, and a wallet
+   * that declines it answers -1 and closes its activity — the library then
+   * retries a fresh authorise on a session the wallet has already left, so
+   * no approval sheet is ever drawn. Asking fresh is the same request the
+   * first connect makes, which is the one that has always worked.
+   */
+  const withWallet = useCallback(
+    <T,>(fn: (w: WalletOps) => Promise<T>): Promise<T> =>
+      (connectAnd as unknown as (
+        cb: (w: Web3MobileWallet) => Promise<T>,
+      ) => Promise<T>)(async (wallet) => {
+        const w = wallet;
+        await w.authorize({ chain, identity });
+        return await fn({
+          capabilities: async () => {
+            const caps = await w.getCapabilities();
+            const features: readonly string[] = caps.features ?? [];
+            // A wallet on the legacy protocol publishes no features array
+            // and answers the deprecated booleans instead. sign_transactions
+            // is mandatory in that protocol, so its absence from `features`
+            // only means something on a wallet that sends the array at all.
+            return {
+              signTransactions:
+                features.length === 0 ||
+                features.includes('solana:signTransactions'),
+              signAndSend:
+                features.includes('solana:signAndSendTransaction') ||
+                caps.supports_sign_and_send_transactions === true,
+            };
+          },
+          signAndSend: async (tx, minContextSlot) => {
+            const sigs = await w.signAndSendTransactions({
+              minContextSlot,
+              transactions: [tx],
+            });
+            return sigs[0];
+          },
+          signOnly: async (tx) => {
+            const signed = await w.signTransactions({ transactions: [tx] });
+            return signed[0];
+          },
+        });
+      }),
+    [connectAnd, chain, identity],
+  );
+
   const submit = useCallback(async () => {
     if (!authority || !challenge || !best) return;
     setError(null);
@@ -145,7 +203,7 @@ export default function SummaryScreen() {
      * is corroboration and can be collected afterwards, or not at all.
      */
     setStage('submitting');
-    let outcome = await submitSolution({
+    const outcome = await submitSolution({
       connection,
       authority,
       mint: challenge.mint,
@@ -154,72 +212,23 @@ export default function SummaryScreen() {
       claim,
       challengeAtMine: challengeAtStart ?? challenge.challenge,
       currentChallenge: challenge.challenge,
-      // Sign-only, so the transaction is broadcast through our own
-      // endpoint rather than the wallet's. signAndSend stays as a fallback
-      // for any wallet that declines to sign without sending.
-      signOnly: async (tx: Transaction) => {
-        try {
-          return (await signTransaction(tx)) as unknown as Transaction;
-        } catch (e) {
-          throw new Error(
-            `signTransaction: ${e instanceof Error ? e.message : String(e)}`,
-          );
-        }
-      },
-      signAndSend: (tx: Transaction, slot: number) =>
-        signAndSendTransaction(tx, slot) as unknown as Promise<string>,
+      withWallet,
     });
 
     /**
-     * Retry once through a fresh authorization.
+     * No retry here any more.
      *
-     * Mobile Wallet Adapter caches an auth token from the first connect,
-     * and a stale one fails every later request with the same opaque
-     * code — the wallet opens, authenticates, and returns without ever
-     * prompting. Tearing the session down and authorizing again is the
-     * only thing that clears it, and it costs one extra wallet round
-     * trip on a path that has already failed.
+     * There used to be one: on -1 it disconnected, waited, reconnected and
+     * ran the submission again. It could never help, because the -1 it was
+     * reacting to came from the submission opening a second association on
+     * top of its own first one, and running the submission again just did
+     * that twice more. It also cost the user two extra wallet trips before
+     * showing the same error.
+     *
+     * The collision is gone and the association is authorised fresh, so a
+     * -1 that reaches here now means the wallet genuinely declined. That is
+     * the user's answer to give, not something to retry around.
      */
-    if (!outcome.ok && /authorization request failed|-1\//i.test(outcome.message)) {
-      try {
-        await disconnect();
-      } catch {
-        // Already gone; the reconnect is what matters.
-      }
-      // Let the failed association close before opening another. Mobile
-      // Wallet Adapter permits one at a time and teardown is not instant.
-      await new Promise((r) => setTimeout(r, 1500));
-      try {
-        await connect();
-        outcome = await submitSolution({
-          connection,
-          authority,
-          mint: challenge.mint,
-          nonce: best.nonce,
-          difficulty: best.difficulty,
-          claim,
-          challengeAtMine: challengeAtStart ?? challenge.challenge,
-          currentChallenge: challenge.challenge,
-          signOnly: async (tx: Transaction) => {
-            try {
-              return (await signTransaction(tx)) as unknown as Transaction;
-            } catch (e) {
-              throw new Error(
-                `signTransaction: ${e instanceof Error ? e.message : String(e)}`,
-              );
-            }
-          },
-          signAndSend: (tx: Transaction, slot: number) =>
-            signAndSendTransaction(tx, slot) as unknown as Promise<string>,
-        });
-      } catch (e) {
-        setStage('error');
-        setError(
-          `Could not re-authorise the wallet. ${e instanceof Error ? e.message : String(e)}`,
-        );
-        return;
-      }
-    }
 
     if (outcome.ok) {
       // Now that the mint has landed, a second association is safe to
@@ -248,7 +257,7 @@ export default function SummaryScreen() {
     }
   }, [
     authority, challenge, best, snapshot, digest, signMessage, challengeAtStart,
-    connection, signTransaction, signAndSendTransaction, connect, disconnect,
+    connection, withWallet,
     storedId, refresh,
   ]);
 
