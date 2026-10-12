@@ -1,6 +1,6 @@
 # Lode — demo voiceover
 
-Timed to `lode-demo.mp4` (2:13). **217 spoken words**, about 98
+Timed to `lode-demo.mp4` (2:13). **224 spoken words**, about 101
 words per minute — slow enough to sound unhurried and to leave the screen
 room to do its own work.
 
@@ -115,10 +115,11 @@ numbers on screen are the argument.
 
 ---
 
-### 1:58 – 2:13 · The honest note, and close — 32 words
+### 1:58 – 2:13 · The honest note, and close — 39 words
 
-> One honest note. The chain verifies the hash, not the gait — that runs
-> on the device. Hardware attestation closes it. That's next.
+> One honest note. The chain verifies the hash. It cannot verify the
+> walking — the phone decides that, and the chain trusts it. Hardware
+> attestation closes the gap. That's next.
 
 *(pause)*
 
@@ -154,6 +155,10 @@ and it is the difference between being caught and being ahead of them.
 The three-word signpost earns its place: without it the sentence sounds
 like more description, and a listener may not register that you raised the
 weakness yourself. That framing is the entire reason to say it.
+
+**Never say "gait" out loud.** It is indistinguishable from "gate", and a
+listener spends the next three seconds working out which you meant. Say
+"the walking" everywhere, including in Q&A.
 
 **Numbers are read as words**: "difficulty twenty-two", "sixteen hundred
 tokens". Don't read 1,638.40 aloud — it's on screen, and saying it costs
