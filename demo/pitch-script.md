@@ -3,6 +3,10 @@
 A pitch is not a demo. The demo video shows the thing working; this one
 argues why it should exist.
 
+**This is probably not needed.** The Clock In submission is judged from
+the deck, repository, demo video and APK — there is no pitch round and no
+Q&A. Keep this only in case a later stage asks for one.
+
 **Note on length.** The Clock In submission form has no pitch-video field —
 it asks only for a deck, a demo video, a repo and an APK. So this is for a
 live round or for narrating the deck, not a submission artifact. Unless a

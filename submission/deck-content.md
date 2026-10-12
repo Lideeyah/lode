@@ -181,8 +181,16 @@ A motion floor sits ahead of all six, because the features are shape
 statistics and the shape of sensor noise lands inside the walking bands by
 accident. Without it, a phone sitting still on a desk scores 0.91.
 
+### And it credits real walking.
+
+Three sessions on a Xiaomi 14T, reading its own sensors with no tuning for
+that handset: mean confidence **78** and **70** against a threshold of 62,
+mining difficulty **20** and **18**.
+
 **Visual:** two big mono figures — `0.74 CREDITED` in `error`, `0.299
 REFUSED` in `credit`. Caption beneath: `THE SAME SHAKE, BEFORE AND AFTER`.
+Then a single smaller line under them: `ON DEVICE · XIAOMI 14T · MEAN
+CONFIDENCE 78 · DIFFICULTY 20`.
 
 **Note:** this slide is the technical credibility of the whole deck. It
 says we attacked our own classifier and it failed, so we rebuilt it.
@@ -461,17 +469,28 @@ in mono at the base.
 
 ---
 
-## Claims discipline — read before you present
+## Claims discipline
 
-Three things to be careful about, because a judge may press on them.
+Nobody is presenting this. Judges read the deck, the repo, the video and
+the APK, then decide — so anything that exists only as "I'll explain if
+asked" is simply lost, and anything overstated is never corrected.
+
+That cuts both ways, and both matter:
+
+**Every strength has to be written down.** The on-device results are the
+clearest example: they are the single best evidence the classifier works,
+and until now they lived only in the repository. They are on slide 8 now.
+
+**Every limitation has to be written down too**, because a judge who finds
+one you did not mention has no way to hear your answer. Slide 11 does that
+for the big one.
 
 **The thresholds are verified on one phone, not many.** They credit real
 walking on a Xiaomi 14T — three sessions at mean confidence 78, 70 and 40,
-mining difficulty 20, 18 and 17 with no device-specific tuning. What has
+mining difficulty 20, 18 and 17, with no device-specific tuning. What has
 not been shown is that they generalise across different gaits, carry
-positions and sensor hardware. If asked, say that: it works on the device
-we have, and breadth is a data-collection exercise rather than a
-redesign.
+positions and sensor hardware. Slide 8 states the result; the detail is in
+`docs/classifier-robustness.md` for anyone who opens the repo.
 
 **The demo video's motion is simulated.** The classifier, the scoring, the
 mining and the on-chain transaction are all real — the accelerometer stream
