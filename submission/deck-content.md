@@ -19,6 +19,10 @@ Use these and no others. All are verifiable against the mint on devnet.
 | Rotation coupling, walking | **0.997** | 7 |
 | Rotation coupling, shaken | **0.064** | 7, 10 |
 | Confidence when shaken | **33** | 10 |
+| On-device mean confidence | **78** and **70** | 8 |
+| On-device difficulty mined | **20** and **18** | 8 |
+| Device tested on | **Xiaomi 14T** | 8 |
+| Crediting threshold | **62** | 6, 8, 10 |
 
 Slides 9 and 10 describe **the same session**, which is the one in the
 screenshots. An earlier draft quoted a different real session — difficulty
