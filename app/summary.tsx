@@ -45,7 +45,14 @@ const rewardFor = (difficulty: number) => Math.pow(2, Math.max(0, difficulty - 8
 export default function SummaryScreen() {
   const { width } = useWindowDimensions();
   const router = useRouter();
-  const { signMessage, signTransaction, signAndSendTransaction, connection } = useWallet();
+  const {
+    signMessage,
+    signTransaction,
+    signAndSendTransaction,
+    connect,
+    disconnect,
+    connection,
+  } = useWallet();
   const { authority, challenge, refresh } = useChain();
   const { snapshot, best, trace, machine, challengeAtStart } = useSessionContext();
 
@@ -142,7 +149,7 @@ export default function SummaryScreen() {
     }
 
     setStage('submitting');
-    const outcome = await submitSolution({
+    let outcome = await submitSolution({
       connection,
       authority,
       mint: challenge.mint,
@@ -167,6 +174,54 @@ export default function SummaryScreen() {
         signAndSendTransaction(tx, slot) as unknown as Promise<string>,
     });
 
+    /**
+     * Retry once through a fresh authorization.
+     *
+     * Mobile Wallet Adapter caches an auth token from the first connect,
+     * and a stale one fails every later request with the same opaque
+     * code — the wallet opens, authenticates, and returns without ever
+     * prompting. Tearing the session down and authorizing again is the
+     * only thing that clears it, and it costs one extra wallet round
+     * trip on a path that has already failed.
+     */
+    if (!outcome.ok && /authorization request failed|-1\//i.test(outcome.message)) {
+      try {
+        await disconnect();
+      } catch {
+        // Already gone; the reconnect is what matters.
+      }
+      try {
+        await connect();
+        outcome = await submitSolution({
+          connection,
+          authority,
+          mint: challenge.mint,
+          nonce: best.nonce,
+          difficulty: best.difficulty,
+          claim,
+          challengeAtMine: challengeAtStart ?? challenge.challenge,
+          currentChallenge: challenge.challenge,
+          signOnly: async (tx: Transaction) => {
+            try {
+              return (await signTransaction(tx)) as unknown as Transaction;
+            } catch (e) {
+              throw new Error(
+                `signTransaction: ${e instanceof Error ? e.message : String(e)}`,
+              );
+            }
+          },
+          signAndSend: (tx: Transaction, slot: number) =>
+            signAndSendTransaction(tx, slot) as unknown as Promise<string>,
+        });
+      } catch (e) {
+        setStage('error');
+        setError(
+          `Could not re-authorise the wallet. ${e instanceof Error ? e.message : String(e)}`,
+        );
+        return;
+      }
+    }
+
     if (outcome.ok) {
       const paid = rewardFor(best.difficulty);
       setSignature(outcome.signature);
@@ -182,7 +237,8 @@ export default function SummaryScreen() {
     }
   }, [
     authority, challenge, best, snapshot, digest, signMessage, challengeAtStart,
-    connection, signTransaction, signAndSendTransaction, storedId, refresh,
+    connection, signTransaction, signAndSendTransaction, connect, disconnect,
+    storedId, refresh,
   ]);
 
   const panelWidth = width - space.base * 2;

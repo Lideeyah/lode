@@ -117,11 +117,19 @@ export async function submitSolution(params: {
     let signature: string;
     try {
       signature = await signAndSend(tx, 0);
-    } catch (e) {
-      if (!signOnly) throw e;
-      // A wallet that declines sign-and-send may still sign alone.
-      const signed = await signOnly(tx);
-      signature = await sendRawTransaction(signed.serialize());
+    } catch (primary) {
+      if (!signOnly) throw primary;
+      try {
+        // A wallet that declines sign-and-send may still sign alone.
+        const signed = await signOnly(tx);
+        signature = await sendRawTransaction(signed.serialize());
+      } catch (fallback) {
+        // Report both. Reporting only the fallback hid the real failure
+        // and sent us chasing the wrong one for two builds.
+        const a = primary instanceof Error ? primary.message : String(primary);
+        const b = fallback instanceof Error ? fallback.message : String(fallback);
+        throw new Error(`signAndSend: ${a} | ${b}`);
+      }
     }
     void slot;
     return { ok: true, signature };
