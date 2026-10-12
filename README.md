@@ -14,6 +14,12 @@ You walk  ->  the phone verifies it is really you walking
           ->  the chain checks the work and mints
 ```
 
+## Watch it
+
+**[Demo video](https://youtube.com/shorts/PFBdXa-BeTs)** — two minutes: a
+session from cold start to tokens minted, including the classifier refusing
+to credit a shaken phone.
+
 ## Install it
 
 **[Download the APK](https://github.com/Lideeyah/lode/releases/latest)** — Android, ~60MB.
