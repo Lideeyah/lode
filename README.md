@@ -22,7 +22,7 @@ Four minutes, in this order.
 That's the phone being shaken instead of walked, and the classifier refusing
 to credit it. It's the product's central claim, on camera.
 
-**2 · Read [`src/sensing/bands.ts`](src/sensing/bands.ts)** — 124 lines. Every
+**2 · Read [`src/sensing/bands.ts`](src/sensing/bands.ts)** — 142 lines. Every
 threshold the classifier uses, with the reasoning for each. This is the file
 that decides whether you get paid.
 
@@ -68,10 +68,12 @@ The build is `arm64-v8a` only, which covers essentially every Android phone
 made since about 2016. It will not run on an x86 emulator; if you need one,
 add `x86_64` to `buildArchs` in `app.json` and rebuild.
 
-**Set your wallet to devnet before connecting.** Lode runs on Solana
-devnet, and most wallets default to mainnet and will refuse to connect
-until you switch. In Phantom: Settings → Developer Settings → Testnet Mode,
-then choose Solana Devnet. Solflare is similar.
+**Set your wallet to devnet.** Lode runs on Solana devnet. The app
+authorises without naming a cluster if the wallet declines devnet, and
+broadcasts through its own endpoint either way, so a wallet left on
+mainnet will still sign and still mint — but it will not show you the
+balance. In Phantom: Settings → Developer Settings → Testnet Mode, then
+choose Solana Devnet. Solflare is similar.
 
 Xiaomi's HyperOS and MIUI block sideloaded installs more aggressively than
 stock Android. If you see "App not installed", turn off **MIUI
@@ -191,9 +193,12 @@ scripts/             program id sync, e2e check
 
 ## Calibration
 
-`src/sensing/bands.ts` holds every threshold. The defaults are reasoned
-starting points, not measurements, and none of them are trustworthy until
-they have been checked against real data from the handset the demo runs on.
+`src/sensing/bands.ts` holds every threshold. They began as reasoned
+numbers and have since been checked on a Xiaomi 14T, where real walking
+credits at 70–78 against a threshold of 62 and a shaken phone is refused.
+That is one handset and one gait, so the bands are known to work rather
+than known to generalise, and the way to find their edges is to attack
+them on your own device.
 
 Walk, then run, then attack it: shake it, swing it in a bag, sit it on a
 vehicle, tape it to something vibrating. Watch the Verification tab during
