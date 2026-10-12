@@ -1,15 +1,16 @@
 import { Tabs } from 'expo-router';
 import { Text } from 'react-native';
-import { color, font, space } from '../../src/theme/tokens';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { color, font } from '../../src/theme/tokens';
 
 /** Labels are uppercase mono and tracked, like every other label in the app. */
 function TabLabel({ children, focused }: { children: string; focused: boolean }) {
   return (
     <Text
       style={{
-        fontFamily: font.mono,
+        fontFamily: focused ? font.monoMedium : font.mono,
         fontSize: 11,
-        letterSpacing: 1.2,
+        letterSpacing: 1.4,
         color: focused ? color.ink : color.muted,
       }}
     >
@@ -19,6 +20,16 @@ function TabLabel({ children, focused }: { children: string; focused: boolean })
 }
 
 export default function TabsLayout() {
+  /**
+   * The bar has to sit above the system gesture area, not under it.
+   *
+   * A fixed height with fixed padding put the labels directly on the
+   * gesture bar on a tall phone, which reads as the app running off the
+   * bottom of the screen. The inset varies by device, so it has to be
+   * measured rather than guessed.
+   */
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
@@ -29,10 +40,11 @@ export default function TabsLayout() {
           backgroundColor: color.raised,
           borderTopColor: color.rule,
           borderTopWidth: 2,
-          height: 64,
-          paddingTop: space.sm,
-          paddingBottom: space.sm,
+          height: 60 + insets.bottom,
+          paddingTop: 14,
+          paddingBottom: insets.bottom + 12,
         },
+        tabBarItemStyle: { paddingVertical: 0 },
         sceneStyle: { backgroundColor: color.paper },
       }}
     >
