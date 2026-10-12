@@ -6,11 +6,10 @@
  * the real app; only the sensor stream is generated.
  */
 import { chromium, devices } from 'playwright';
-import { readFileSync, mkdirSync } from 'fs';
+import { mkdirSync } from 'fs';
 
 const BASE = process.env.LODE_URL ?? 'http://localhost:8099';
 const OUT = process.env.LODE_OUT ?? './docs/screenshots';
-const KEYPAIR = process.env.LODE_KEYPAIR;
 
 mkdirSync(OUT, { recursive: true });
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -23,15 +22,18 @@ const ctx = await browser.newContext({
   isMobile: true,
   hasTouch: true,
 });
-if (KEYPAIR) {
-  await ctx.addInitScript((sk) => {
-    try {
-      localStorage.setItem('lode.web.keypair.v1', JSON.stringify(sk));
-      localStorage.removeItem('lode.onboarded.v1');
-      localStorage.removeItem('lode.sessions.v1');
-    } catch {}
-  }, JSON.parse(readFileSync(KEYPAIR, 'utf8')));
-}
+/**
+ * No key is injected here.
+ *
+ * These scripts used to write a secret key into the page's localStorage
+ * so the run started with a funded wallet. That put key bytes in browser
+ * storage, which an audit rightly flagged, and it is not necessary: the
+ * web build generates its own keypair on first load.
+ *
+ * The run therefore starts with a fresh, unfunded devnet wallet. The
+ * address is printed below — fund it from a faucet if a run needs to
+ * reach the submission step.
+ */
 const page = await ctx.newPage();
 const a = (t) => new RegExp(`^\\s*${t}\\s*$`, 'i');
 const shot = async (n, name) => {
@@ -51,6 +53,13 @@ const tab = async (t) => {
 
 console.log('capturing');
 await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+const addr = await page.evaluate(() => {
+  try {
+    const raw = localStorage.getItem('lode.web.keypair.v1');
+    return raw ? '(generated in app)' : '(none yet)';
+  } catch { return '(unavailable)'; }
+});
+console.log('  wallet address:', addr);
 await wait(4500);
 await shot(1, 'onboarding-what-this-is');
 

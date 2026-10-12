@@ -7,12 +7,11 @@
  * transactions. The walk is simulated; the verdicts are not.
  */
 import { chromium, devices } from 'playwright';
-import { readFileSync, mkdirSync } from 'fs';
+import { mkdirSync } from 'fs';
 import { join } from 'path';
 
 const BASE = process.env.LODE_URL ?? 'http://localhost:8099';
 const OUT = process.env.LODE_OUT ?? './demo';
-const KEYPAIR = process.env.LODE_KEYPAIR;
 
 const phone = devices['Pixel 7'];
 const VIEWPORT = { width: 412, height: 915 };
@@ -34,16 +33,6 @@ const context = await browser.newContext({
 
 // Seed the wallet before any app code runs, and start the session fresh so
 // onboarding is shown.
-if (KEYPAIR) {
-  const secret = JSON.parse(readFileSync(KEYPAIR, 'utf8'));
-  await context.addInitScript((sk) => {
-    try {
-      localStorage.setItem('lode.web.keypair.v1', JSON.stringify(sk));
-      localStorage.removeItem('lode.onboarded.v1');
-      localStorage.removeItem('lode.sessions.v1');
-    } catch {}
-  }, secret);
-}
 
 const page = await context.newPage();
 page.on('pageerror', (e) => console.log('  !! page error:', e.message.slice(0, 160)));
@@ -102,6 +91,13 @@ step(1, 'cold open on first run');
 // Not networkidle: a live RPC connection keeps traffic flowing, so the
 // page never goes idle and the wait times out.
 await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+const addr = await page.evaluate(() => {
+  try {
+    const raw = localStorage.getItem('lode.web.keypair.v1');
+    return raw ? '(generated in app)' : '(none yet)';
+  } catch { return '(unavailable)'; }
+});
+console.log('  wallet address:', addr);
 await wait(4500);
 
 for (const label of ['Next', 'Next']) {

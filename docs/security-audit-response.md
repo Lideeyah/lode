@@ -22,13 +22,21 @@ repository now carries an MIT `LICENSE`, and `program/Cargo.toml`
 declares `license = "MIT"`.
 
 **`A Solana secret key is being written to browser storage` · high ×2** —
-correct in substance, though it flagged the two capture scripts rather
-than the file that actually does it, `src/wallet/useWallet.web.ts`.
+correct, and now removed.
 
-The web build holds a keypair in `localStorage` because Mobile Wallet
-Adapter is an Android intent protocol with no browser equivalent, and the
-web build exists to demonstrate the app and to record the walkthrough. It
-only ever holds a throwaway devnet key.
+Both capture scripts wrote a secret key into the page's `localStorage`
+so a run would start with a funded wallet. That was unnecessary: the web
+build generates its own keypair when it finds none. The injection is
+gone from `scripts/record-demo.mjs` and `scripts/capture-screens.mjs`,
+which now start each run with a fresh unfunded devnet wallet.
+
+The underlying behaviour the finding describes still exists in
+`src/wallet/useWallet.web.ts`, which the scan did not flag.
+
+That file holds a keypair in `localStorage` because Mobile Wallet Adapter
+is an Android intent protocol with no browser equivalent, and the web
+build exists to demonstrate the app and to record the walkthrough. It
+only ever holds a throwaway devnet key, and it is web-only.
 
 **The Android build — the one that ships — never touches key material.**
 It signs exclusively through Mobile Wallet Adapter, so the secret stays
