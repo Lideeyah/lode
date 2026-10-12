@@ -36,6 +36,12 @@ hash rather than trusting the claim.
 so you can confirm the client and the program agree without installing
 anything.
 
+Two documents go further than this README:
+[classifier-robustness.md](docs/classifier-robustness.md) measures the
+classifier against twelve movement scenarios including four spoofing
+attacks, and [threat-model.md](docs/threat-model.md) states what is
+defended, what is not, and what closes the gap.
+
 ### What to be sceptical about
 
 Two things, which we'd rather name than have you find.
