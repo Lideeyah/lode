@@ -30,6 +30,18 @@ export function encodeClaimMessage(c: ClaimPayload): Uint8Array {
   return new Uint8Array(Buffer.from(lines.join('\n'), 'utf8'));
 }
 
+/**
+ * The wallet operations the submission needs, scoped to one live
+ * association. `capabilities` is the wallet's own answer about which
+ * methods it implements, so the choice below is a reply to the wallet
+ * rather than a guess about it.
+ */
+export type WalletOps = {
+  capabilities: () => Promise<{ signTransactions: boolean; signAndSend: boolean }>;
+  signAndSend: (tx: Transaction, minContextSlot: number) => Promise<string>;
+  signOnly: (tx: Transaction) => Promise<Transaction>;
+};
+
 export type SubmitOutcome =
   | { ok: true; signature: string }
   | { ok: false; reason: 'rotated' | 'failed' | 'funds'; message: string };
@@ -41,9 +53,13 @@ export async function submitSolution(params: {
   nonce: bigint;
   difficulty: number;
   claim: EffortClaim;
-  signAndSend: (tx: Transaction, minContextSlot: number) => Promise<string>;
-  /** Signs without broadcasting. Preferred: see chain/send.ts. */
-  signOnly?: (tx: Transaction) => Promise<Transaction>;
+  /**
+   * Runs `fn` inside a single, already-authorised wallet association.
+   *
+   * The caller owns the association because only one may be open at a
+   * time; see the signing block below for what that cost us.
+   */
+  withWallet: <T>(fn: (w: WalletOps) => Promise<T>) => Promise<T>;
   /** Challenge the solution was found against, to detect a mid-session rotation. */
   challengeAtMine: Uint8Array;
   currentChallenge: Uint8Array;
@@ -55,8 +71,7 @@ export async function submitSolution(params: {
     nonce,
     difficulty,
     claim,
-    signAndSend,
-    signOnly,
+    withWallet,
     challengeAtMine,
     currentChallenge,
   } = params;
@@ -101,36 +116,66 @@ export async function submitSolution(params: {
     void lastValidBlockHeight;
 
     /**
-     * Let the wallet sign and send.
+     * One association, both attempts inside it.
      *
-     * Not sign-only, despite that being the cleaner design. Phantom's
-     * Mobile Wallet Adapter implementation supports authorize and
-     * sign_and_send_transactions; it does not implement sign_messages or
-     * sign_transactions, and when asked for one it returns an error
-     * without ever showing an approval sheet — the wallet opens,
-     * authenticates, and bounces straight back.
+     * This is where every submission was failing. `signAndSend` and the
+     * sign-only fallback each used to come from the wallet hook, and each
+     * of those opens its own Mobile Wallet Adapter association. The
+     * fallback fired the instant the primary rejected, so it tried to
+     * associate while the first association was still tearing down —
+     * only one may be open at a time — and was refused with
+     * ERROR_AUTHORIZATION_FAILED. The wallet opened, authenticated and
+     * returned with no approval sheet, because the sheet belonged to a
+     * session that no longer existed.
+     *
+     * The -1 from that doomed second association was also what the retry
+     * in app/summary.tsx matched on, so the retry re-ran this function
+     * and made the same pair of back-to-back associations. The path could
+     * not succeed, however many times it was tried.
+     *
+     * Now the caller opens one association, authorises it once, and both
+     * attempts happen inside it. The fallback costs no wallet round trip
+     * and cannot collide with anything.
      *
      * minContextSlot is 0 deliberately: it means "no constraint". Passing
      * a slot read from our own RPC asks the wallet's node to have caught
      * up to it, and a wallet whose node lags then refuses.
      */
-    let signature: string;
-    try {
-      signature = await signAndSend(tx, 0);
-    } catch (primary) {
-      if (!signOnly) throw primary;
-      try {
-        // A wallet that declines sign-and-send may still sign alone.
-        const signed = await signOnly(tx);
-        signature = await sendRawTransaction(signed.serialize());
-      } catch (fallback) {
-        // Report both. Reporting only the fallback hid the real failure
-        // and sent us chasing the wrong one for two builds.
-        const a = primary instanceof Error ? primary.message : String(primary);
-        const b = fallback instanceof Error ? fallback.message : String(fallback);
-        throw new Error(`signAndSend: ${a} | ${b}`);
+    const signature = await withWallet(async (w) => {
+      // Ask the wallet which methods it has rather than inferring it from
+      // a failure. An earlier note in this file concluded that Phantom
+      // does not implement sign_transactions; that was read off a failure
+      // which actually happened during authorization, before any signing
+      // was attempted, so it was never evidence of anything.
+      const caps = await w
+        .capabilities()
+        .catch(() => ({ signTransactions: true, signAndSend: true }));
+
+      // Sign-only first when available: the transaction then goes out
+      // through our own devnet endpoint instead of the wallet's node,
+      // which removes any dependence on which cluster the wallet is set
+      // to. See chain/send.ts.
+      if (caps.signTransactions) {
+        try {
+          const signed = await w.signOnly(tx);
+          return await sendRawTransaction(signed.serialize());
+        } catch (primary) {
+          if (!caps.signAndSend) throw primary;
+          try {
+            return await w.signAndSend(tx, 0);
+          } catch (fallback) {
+            // Report both. Reporting only the fallback hid the real
+            // failure and sent us chasing the wrong one for two builds.
+            const a = primary instanceof Error ? primary.message : String(primary);
+            const b = fallback instanceof Error ? fallback.message : String(fallback);
+            throw new Error(`signTransactions: ${a} | signAndSend: ${b}`);
+          }
+        }
       }
-    }
+
+      return await w.signAndSend(tx, 0);
+    });
+
     void slot;
     return { ok: true, signature };
   } catch (e) {
@@ -139,7 +184,7 @@ export async function submitSolution(params: {
     // Mobile Wallet Adapter failures surface as opaque codes. Say what the
     // user can actually do about them.
     const friendly = /authorization request failed|-1\//i.test(raw)
-      ? 'The wallet refused the request. Check that a Solana wallet is installed, that it is unlocked, and that it is switched to devnet — most wallets need testnet mode enabled before they will authorise a devnet app.'
+      ? 'The wallet declined to authorise this request. Open the wallet, check that Lode is listed under its connected apps, and remove it there before trying again.'
       : /no wallet|not found|activity/i.test(raw)
         ? 'No compatible wallet responded. Install a Solana wallet that supports Mobile Wallet Adapter, such as Phantom or Solflare.'
         : raw;
