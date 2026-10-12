@@ -126,28 +126,24 @@ export default function SummaryScreen() {
     };
 
     /**
-     * Sign the effort claim. Free, instant, no transaction.
+     * The claim signature is collected *after* the transaction, not before.
      *
-     * Deliberately not fatal, and expected to fail on some wallets.
-     * Phantom's Mobile Wallet Adapter implementation does not offer
-     * sign_messages at all, so this attempt returns an error without
-     * showing the user anything.
+     * Every wallet call in Mobile Wallet Adapter opens its own association
+     * — signMessages, signTransactions and signAndSendTransactions each
+     * wrap themselves in a separate `transact`. Only one association may
+     * be open at a time, and teardown is not instant.
      *
-     * That costs nothing: the claim travels in the instruction data and is
-     * already bound to this wallet by the transaction signature, so the
-     * message signature is corroboration rather than the thing that makes
-     * it authentic. On a wallet that does support it — including Seed
-     * Vault on a Seeker — the signature is collected.
+     * Phantom does not implement sign_messages, so asking for the claim
+     * signature first opened an association, failed, and tore down; the
+     * submission then tried to associate on top of that and was refused
+     * with ERROR_AUTHORIZATION_FAILED — the wallet opening, authenticating
+     * and returning with no prompt. A step that was meant to be harmless
+     * was breaking the one that mattered.
+     *
+     * The submission goes first now, alone. The claim is already bound to
+     * this wallet by the transaction signature, so the message signature
+     * is corroboration and can be collected afterwards, or not at all.
      */
-    try {
-      setStage('signing');
-      await signMessage(
-        encodeClaimMessage({ ...claim, authority: authority.toBase58() }),
-      );
-    } catch {
-      // Carry on to the submission, which carries its own signature.
-    }
-
     setStage('submitting');
     let outcome = await submitSolution({
       connection,
@@ -190,6 +186,9 @@ export default function SummaryScreen() {
       } catch {
         // Already gone; the reconnect is what matters.
       }
+      // Let the failed association close before opening another. Mobile
+      // Wallet Adapter permits one at a time and teardown is not instant.
+      await new Promise((r) => setTimeout(r, 1500));
       try {
         await connect();
         outcome = await submitSolution({
@@ -223,6 +222,18 @@ export default function SummaryScreen() {
     }
 
     if (outcome.ok) {
+      // Now that the mint has landed, a second association is safe to
+      // open. On a wallet without sign_messages this fails and nothing
+      // is lost; on one with it — Seed Vault included — it is collected.
+      try {
+        await new Promise((r) => setTimeout(r, 1200));
+        await signMessage(
+          encodeClaimMessage({ ...claim, authority: authority.toBase58() }),
+        );
+      } catch {
+        // The transaction signature already binds the claim.
+      }
+
       const paid = rewardFor(best.difficulty);
       setSignature(outcome.signature);
       setAmount(paid);
