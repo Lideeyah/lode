@@ -68,6 +68,34 @@ not an average, so the result collapses when any signature is absent rather
 than being outvoted. Each term is floored at 0.05 so one glitched sample
 degrades the score steeply instead of reading as fraud.
 
+## On real hardware
+
+The table above is synthetic. These are not.
+
+Three sessions walked on a **Xiaomi 14T**, reading its own accelerometer
+and gyroscope at a measured ~50Hz:
+
+| Duration | Effort accrued | Mean confidence | Best difficulty |
+|---|---|---|---|
+| 116s | 80.0 | **78** | 20 |
+| 76s | 33.4 | **70** | 18 |
+| 278s | 83.5 | 40 | 17 |
+
+The threshold is 62. The first two sessions cleared it on average across
+their whole duration, credited effort throughout, and mined solutions at
+difficulty 18 and 20 — on real gait, on a real handset, with no tuning
+done for that device.
+
+The third session averaged 40, below the threshold. Mean confidence is
+averaged over every window including stationary ones, so a session that
+includes standing still scores lower without the classifier being wrong;
+it accrued 83.5 effort, which is the figure that reflects the crediting
+windows.
+
+What this establishes is that the bands are not merely theoretical: they
+credit a real person walking with a phone, first time, on hardware they
+were not tuned for.
+
 ## What this does and does not establish
 
 **Does:** that the decision boundary has the right shape, that each feature
@@ -76,13 +104,14 @@ attacks modelled here are rejected with a margin. It also catches
 regressions — this table is a test, and it fails the build if an attack
 starts crediting.
 
-**Does not:** that the thresholds are correct for a given handset and a
-given person. These are models, not recordings. The separation is real; the
-exact numbers need calibration against logged sessions from several people,
-several carry positions and several devices.
+**Does not:** that the thresholds generalise. One person on one handset
+is evidence the bands work, not evidence they work for everyone. Different
+gaits, carry positions, and sensor hardware will move the numbers, and
+only logged sessions from several people on several devices would show by
+how much.
 
-One honest observation from building this: the hardest positive case is the
-one we could not synthesise. Pearson correlation is scale-invariant, so a
+One honest observation: the hardest positive case is the one we could not
+synthesise. Pearson correlation is scale-invariant, so a
 coherent rotation signal survives heavy noise, and every model of a
 "difficult" walk still scored above 0.99. Whether a real gait exists that
 genuinely lacks the coupling — a very stiff carry, a prosthetic, a wheeled

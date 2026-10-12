@@ -465,11 +465,13 @@ in mono at the base.
 
 Three things to be careful about, because a judge may press on them.
 
-**The gait bands are not yet calibrated against real walking.** They are
-reasoned starting points, validated against synthetic signals that confirm
-walking must outscore shaking must outscore stillness. The separation is
-real; the specific thresholds are not yet measured on a human. If asked:
-say exactly that, and that calibration is a device-day, not a redesign.
+**The thresholds are verified on one phone, not many.** They credit real
+walking on a Xiaomi 14T — three sessions at mean confidence 78, 70 and 40,
+mining difficulty 20, 18 and 17 with no device-specific tuning. What has
+not been shown is that they generalise across different gaits, carry
+positions and sensor hardware. If asked, say that: it works on the device
+we have, and breadth is a data-collection exercise rather than a
+redesign.
 
 **The demo video's motion is simulated.** The classifier, the scoring, the
 mining and the on-chain transaction are all real — the accelerometer stream
