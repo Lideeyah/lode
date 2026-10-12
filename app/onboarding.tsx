@@ -20,7 +20,7 @@ import { useWallet } from '../src/wallet/useWallet';
 import { PrimaryButton, Label } from '../src/components/primitives';
 import { TracePanel } from '../src/components/TracePanel';
 import { setOnboarded } from '../src/storage';
-import { color, space, type as t } from '../src/theme/tokens';
+import { color, space, radius, stroke, type as t } from '../src/theme/tokens';
 
 /** Two footfall impulses, the second slightly smaller. The mark, as a curve. */
 function impulseTrace(points = 80): number[] {
@@ -93,9 +93,7 @@ export default function Onboarding() {
     } catch (e) {
       Alert.alert(
         'Could not connect',
-        e instanceof Error
-          ? e.message
-          : 'No compatible wallet responded. Install a Solana wallet that supports Mobile Wallet Adapter, then try again.',
+        'Check that your wallet is installed, unlocked, and switched to devnet — most wallets refuse a devnet app until Testnet Mode is enabled. In Phantom: Settings → Developer Settings → Testnet Mode → Solana Devnet.',
       );
     } finally {
       setConnecting(false);
@@ -149,11 +147,28 @@ export default function Onboarding() {
         </View>
 
         {last ? (
-          <PrimaryButton
-            label={connecting ? 'Connecting…' : 'Connect wallet'}
-            onPress={onConnect}
-            disabled={connecting}
-          />
+          <>
+            {/* Shown before the attempt, not after it fails. Most wallets
+                default to mainnet and will simply refuse a devnet app,
+                which looks like the app is broken rather than like a
+                setting that needs changing. */}
+            <View style={styles.notice}>
+              <Label>Set your wallet to devnet first</Label>
+              <Text style={styles.noticeBody}>
+                Lode runs on Solana devnet. Most wallets default to mainnet and
+                will refuse to connect until you switch.
+              </Text>
+              <Text style={styles.noticeBody}>
+                In Phantom: Settings → Developer Settings → turn on Testnet
+                Mode, then choose Solana Devnet. Solflare is similar.
+              </Text>
+            </View>
+            <PrimaryButton
+              label={connecting ? 'Connecting…' : 'Connect wallet'}
+              onPress={onConnect}
+              disabled={connecting}
+            />
+          </>
         ) : (
           <PrimaryButton label="Next" onPress={() => goTo(page + 1)} />
         )}
@@ -173,4 +188,13 @@ const styles = StyleSheet.create({
   dots: { flexDirection: 'row', gap: space.sm, justifyContent: 'center' },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: color.rule },
   dotActive: { backgroundColor: color.ink },
+  notice: {
+    backgroundColor: color.raised,
+    borderColor: color.rule,
+    borderWidth: stroke.border,
+    borderRadius: radius.card,
+    padding: space.base,
+    gap: space.sm,
+  },
+  noticeBody: { ...t.body, fontSize: 15, lineHeight: 22, color: color.muted },
 });

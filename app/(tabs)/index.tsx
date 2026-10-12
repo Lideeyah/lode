@@ -64,7 +64,10 @@ export default function SessionScreen() {
       try {
         await connect();
       } catch {
-        Alert.alert('Wallet needed', 'Connect a wallet before starting a session.');
+        Alert.alert(
+          'Wallet needed',
+          'Connect a wallet before starting a session. It must be switched to devnet — most wallets refuse otherwise.',
+        );
         return;
       }
     }
@@ -133,6 +136,10 @@ export default function SessionScreen() {
               <Label>Not connected</Label>
               <Text style={styles.body}>
                 Connect a wallet to record effort and submit work.
+              </Text>
+              <Text style={[styles.body, { fontSize: 15, lineHeight: 22 }]}>
+                Your wallet must be on devnet. In Phantom: Settings →
+                Developer Settings → Testnet Mode, then Solana Devnet.
               </Text>
             </Card>
           ) : null}

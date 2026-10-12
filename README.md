@@ -68,6 +68,11 @@ The build is `arm64-v8a` only, which covers essentially every Android phone
 made since about 2016. It will not run on an x86 emulator; if you need one,
 add `x86_64` to `buildArchs` in `app.json` and rebuild.
 
+**Set your wallet to devnet before connecting.** Lode runs on Solana
+devnet, and most wallets default to mainnet and will refuse to connect
+until you switch. In Phantom: Settings → Developer Settings → Testnet Mode,
+then choose Solana Devnet. Solflare is similar.
+
 Xiaomi's HyperOS and MIUI block sideloaded installs more aggressively than
 stock Android. If you see "App not installed", turn off **MIUI
 optimization** in Settings → Additional settings → Developer options, then
