@@ -100,14 +100,30 @@ export async function submitSolution(params: {
     tx.recentBlockhash = blockhash;
     void lastValidBlockHeight;
 
-    // Sign-only first; fall back to letting the wallet broadcast.
+    /**
+     * Let the wallet sign and send.
+     *
+     * Not sign-only, despite that being the cleaner design. Phantom's
+     * Mobile Wallet Adapter implementation supports authorize and
+     * sign_and_send_transactions; it does not implement sign_messages or
+     * sign_transactions, and when asked for one it returns an error
+     * without ever showing an approval sheet — the wallet opens,
+     * authenticates, and bounces straight back.
+     *
+     * minContextSlot is 0 deliberately: it means "no constraint". Passing
+     * a slot read from our own RPC asks the wallet's node to have caught
+     * up to it, and a wallet whose node lags then refuses.
+     */
     let signature: string;
-    if (signOnly) {
+    try {
+      signature = await signAndSend(tx, 0);
+    } catch (e) {
+      if (!signOnly) throw e;
+      // A wallet that declines sign-and-send may still sign alone.
       const signed = await signOnly(tx);
       signature = await sendRawTransaction(signed.serialize());
-    } else {
-      signature = await signAndSend(tx, slot);
     }
+    void slot;
     return { ok: true, signature };
   } catch (e) {
     const raw = e instanceof Error ? e.message : String(e);

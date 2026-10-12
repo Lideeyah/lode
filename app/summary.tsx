@@ -121,12 +121,16 @@ export default function SummaryScreen() {
     /**
      * Sign the effort claim. Free, instant, no transaction.
      *
-     * Deliberately not fatal. The claim travels in the instruction data and
-     * is already bound to this wallet by the transaction signature, so the
-     * separate message signature is corroboration rather than the thing
-     * that makes it authentic. A wallet that refuses signMessage — some
-     * decline it, some fail the authorization round trip — should not cost
-     * the user a session whose work is already done.
+     * Deliberately not fatal, and expected to fail on some wallets.
+     * Phantom's Mobile Wallet Adapter implementation does not offer
+     * sign_messages at all, so this attempt returns an error without
+     * showing the user anything.
+     *
+     * That costs nothing: the claim travels in the instruction data and is
+     * already bound to this wallet by the transaction signature, so the
+     * message signature is corroboration rather than the thing that makes
+     * it authentic. On a wallet that does support it — including Seed
+     * Vault on a Seeker — the signature is collected.
      */
     try {
       setStage('signing');
