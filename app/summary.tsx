@@ -118,16 +118,23 @@ export default function SummaryScreen() {
       featureDigest: digest,
     };
 
+    /**
+     * Sign the effort claim. Free, instant, no transaction.
+     *
+     * Deliberately not fatal. The claim travels in the instruction data and
+     * is already bound to this wallet by the transaction signature, so the
+     * separate message signature is corroboration rather than the thing
+     * that makes it authentic. A wallet that refuses signMessage — some
+     * decline it, some fail the authorization round trip — should not cost
+     * the user a session whose work is already done.
+     */
     try {
       setStage('signing');
-      // Free, instant, no transaction. Proves the claim came from this wallet.
       await signMessage(
         encodeClaimMessage({ ...claim, authority: authority.toBase58() }),
       );
-    } catch (e) {
-      setStage('error');
-      setError(e instanceof Error ? e.message : 'The claim was not signed.');
-      return;
+    } catch {
+      // Carry on to the submission, which carries its own signature.
     }
 
     setStage('submitting');

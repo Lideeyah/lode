@@ -18,11 +18,15 @@ export const RPC_ENDPOINT =
 export const CHAIN = `solana:${CLUSTER}` as const;
 
 /**
- * Shown in the wallet's authorisation sheet. The URI must be reachable and
- * must match the app, or some wallets refuse the request outright.
+ * Shown in the wallet's authorisation sheet.
+ *
+ * No `icon`: it is resolved as a path relative to `uri`, so 'favicon.png'
+ * asked the wallet to fetch https://github.com/favicon.png, which 404s.
+ * A wallet that validates the icon during authorization fails the whole
+ * request over it. The field is optional, and a name and a reachable URI
+ * are enough.
  */
 export const APP_IDENTITY = {
   name: 'Lode',
   uri: 'https://github.com/Lideeyah/lode',
-  icon: 'favicon.png',
 };

@@ -99,14 +99,17 @@ export async function submitSolution(params: {
     const signature = await signAndSend(tx, slot);
     return { ok: true, signature };
   } catch (e) {
-    return {
-      ok: false,
-      reason: 'failed',
-      message:
-        e instanceof Error
-          ? e.message
-          : 'The transaction did not go through. The effort is kept, so you can retry.',
-    };
+    const raw = e instanceof Error ? e.message : String(e);
+
+    // Mobile Wallet Adapter failures surface as opaque codes. Say what the
+    // user can actually do about them.
+    const message = /authorization request failed|-1\//i.test(raw)
+      ? 'The wallet refused the request. Check that a Solana wallet is installed, that it is unlocked, and that it is switched to devnet — most wallets need testnet mode enabled before they will authorise a devnet app.'
+      : /no wallet|not found|activity/i.test(raw)
+        ? 'No compatible wallet responded. Install a Solana wallet that supports Mobile Wallet Adapter, such as Phantom or Solflare.'
+        : raw;
+
+    return { ok: false, reason: 'failed', message };
   }
 }
 
