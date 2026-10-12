@@ -10,6 +10,7 @@ import { Buffer } from 'buffer';
 import { buildSubmitInstruction, featureDigest, type EffortClaim } from './program';
 import { getBlockhash, getSlot } from './blockhash';
 import { sendRawTransaction } from './send';
+import { CLUSTER } from '../wallet/config';
 
 export type ClaimPayload = EffortClaim & { authority: string };
 
@@ -40,11 +41,36 @@ export type WalletOps = {
   capabilities: () => Promise<{ signTransactions: boolean; signAndSend: boolean }>;
   signAndSend: (tx: Transaction, minContextSlot: number) => Promise<string>;
   signOnly: (tx: Transaction) => Promise<Transaction>;
+  /**
+   * Whether the wallet authorised for the cluster we asked for.
+   *
+   * False means it refused our cluster and authorised without one, so it
+   * is signing for whichever cluster it is actually set to. Signing is
+   * still fine — we broadcast through our own endpoint — but asking it to
+   * sign *and send* would put the transaction on its cluster, not ours.
+   */
+  chainAuthorized: boolean;
 };
+
+/**
+ * The wallet refused to authorise for our cluster, and refused again when
+ * asked without one.
+ *
+ * Thrown by the caller's `withWallet` before any signing is attempted, so
+ * nothing has been submitted when it arrives. Mobile Wallet Adapter has no
+ * distinct error code for an unsupported cluster — everything is -1 — so
+ * the two refusals together are what tells us which it was.
+ */
+export class ClusterRefusedError extends Error {
+  constructor(readonly cluster: string, readonly cause?: unknown) {
+    super(`The wallet declined to authorise for ${cluster}.`);
+    this.name = 'ClusterRefusedError';
+  }
+}
 
 export type SubmitOutcome =
   | { ok: true; signature: string }
-  | { ok: false; reason: 'rotated' | 'failed' | 'funds'; message: string };
+  | { ok: false; reason: 'rotated' | 'failed' | 'funds' | 'cluster'; message: string };
 
 export async function submitSolution(params: {
   connection: Connection;
@@ -151,16 +177,23 @@ export async function submitSolution(params: {
         .capabilities()
         .catch(() => ({ signTransactions: true, signAndSend: true }));
 
+      // Sign-and-send is only safe when the wallet authorised for our
+      // cluster. If it refused and authorised without one, it is set to
+      // some other cluster, and asking it to send would put this
+      // transaction there. Signing alone is unaffected: the bytes are the
+      // same and we broadcast them ourselves. See chain/send.ts.
+      const canSend = caps.signAndSend && w.chainAuthorized;
+
       // Sign-only first when available: the transaction then goes out
       // through our own devnet endpoint instead of the wallet's node,
       // which removes any dependence on which cluster the wallet is set
-      // to. See chain/send.ts.
+      // to.
       if (caps.signTransactions) {
         try {
           const signed = await w.signOnly(tx);
           return await sendRawTransaction(signed.serialize());
         } catch (primary) {
-          if (!caps.signAndSend) throw primary;
+          if (!canSend) throw primary;
           try {
             return await w.signAndSend(tx, 0);
           } catch (fallback) {
@@ -173,12 +206,37 @@ export async function submitSolution(params: {
         }
       }
 
+      // Nothing left but sign-and-send, and it cannot be trusted to land
+      // on our cluster. This is the one case where the wallet's cluster
+      // setting genuinely blocks the submission.
+      if (!w.chainAuthorized) throw new ClusterRefusedError(CLUSTER);
+
       return await w.signAndSend(tx, 0);
     });
 
     void slot;
     return { ok: true, signature };
   } catch (e) {
+    /**
+     * The wallet authorises for other clusters but not ours, so testnet
+     * mode is genuinely the thing to fix and this is the one place we can
+     * say so. Everywhere else the advice would be a guess: Mobile Wallet
+     * Adapter answers -1 for every refusal, and telling someone who has
+     * already enabled testnet mode to go and enable it just sends them
+     * round the same loop again.
+     */
+    if (e instanceof ClusterRefusedError) {
+      return {
+        ok: false,
+        reason: 'cluster',
+        message:
+          `The wallet authorised, but not for ${CLUSTER}, and it cannot sign ` +
+          `without also sending — so the transaction would land on whichever ` +
+          `cluster the wallet is set to. Turn on testnet mode and select ` +
+          `Solana ${CLUSTER} in the wallet's developer settings, then submit again.`,
+      };
+    }
+
     const raw = e instanceof Error ? e.message : String(e);
 
     // Mobile Wallet Adapter failures surface as opaque codes. Say what the
