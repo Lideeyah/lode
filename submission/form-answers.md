@@ -170,10 +170,10 @@ to discover.
 ## DECK URL *
 
 ```
-https://drive.google.com/file/d/1ce7y9y3WbhFaLkMpp6wn9P9h4oixobgk/view?usp=sharing
+https://drive.google.com/file/d/11kuS6YjYoB6dCb_Vv-n2w_YFsVbQdZrZ/view?usp=sharing
 ```
 
-Verified publicly accessible — downloads as a PDF with no sign-in.
+16 slides. Verified publicly accessible — downloads as a PDF with no sign-in.
 
 ---
 
