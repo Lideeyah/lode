@@ -33,6 +33,11 @@ import { TRACE_RANGE } from '../src/session/useSession';
 import { useChain } from '../src/chain/context';
 import { encodeClaimMessage, submitSolution, type WalletOps } from '../src/chain/submit';
 import type { Web3MobileWallet } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
+import {
+  SolanaMobileWalletAdapterProtocolError,
+  SolanaMobileWalletAdapterProtocolErrorCode,
+} from '@solana-mobile/mobile-wallet-adapter-protocol';
+import { CHAIN } from '../src/wallet/config';
 import { featureDigest } from '../src/chain/program';
 import { downsampleTrace, saveSession, summariseFeatures, updateSession } from '../src/storage';
 import { color, space, type as t } from '../src/theme/tokens';
@@ -41,6 +46,24 @@ type Stage = 'review' | 'signing' | 'submitting' | 'done' | 'error';
 
 /** Reward scaling must mirror the program's, or the UI lies about the payout. */
 const rewardFor = (difficulty: number) => Math.pow(2, Math.max(0, difficulty - 8)) * 0.1;
+
+/**
+ * A wallet refusal of `authorize`, raised before anything is signed.
+ *
+ * Mobile Wallet Adapter reports every refusal as -1, so this carries no
+ * meaning beyond "the wallet said no to this authorize"; what it was
+ * refusing is worked out by asking a second time. See withWallet below.
+ */
+class AuthorizeRefused extends Error {
+  constructor(readonly reason: unknown) {
+    super(reason instanceof Error ? reason.message : String(reason));
+    this.name = 'AuthorizeRefused';
+  }
+}
+
+const isAuthorizationFailed = (e: unknown) =>
+  e instanceof SolanaMobileWalletAdapterProtocolError &&
+  e.code === SolanaMobileWalletAdapterProtocolErrorCode.ERROR_AUTHORIZATION_FAILED;
 
 export default function SummaryScreen() {
   const { width } = useWindowDimensions();
@@ -132,42 +155,91 @@ export default function SummaryScreen() {
    * first connect makes, which is the one that has always worked.
    */
   const withWallet = useCallback(
-    <T,>(fn: (w: WalletOps) => Promise<T>): Promise<T> =>
-      (connectAnd as unknown as (
-        cb: (w: Web3MobileWallet) => Promise<T>,
-      ) => Promise<T>)(async (wallet) => {
-        const w = wallet;
-        await w.authorize({ chain, identity });
-        return await fn({
-          capabilities: async () => {
-            const caps = await w.getCapabilities();
-            const features: readonly string[] = caps.features ?? [];
-            // A wallet on the legacy protocol publishes no features array
-            // and answers the deprecated booleans instead. sign_transactions
-            // is mandatory in that protocol, so its absence from `features`
-            // only means something on a wallet that sends the array at all.
-            return {
-              signTransactions:
-                features.length === 0 ||
-                features.includes('solana:signTransactions'),
-              signAndSend:
-                features.includes('solana:signAndSendTransaction') ||
-                caps.supports_sign_and_send_transactions === true,
-            };
-          },
-          signAndSend: async (tx, minContextSlot) => {
-            const sigs = await w.signAndSendTransactions({
-              minContextSlot,
-              transactions: [tx],
-            });
-            return sigs[0];
-          },
-          signOnly: async (tx) => {
-            const signed = await w.signTransactions({ transactions: [tx] });
-            return signed[0];
-          },
+    async <T,>(fn: (w: WalletOps) => Promise<T>): Promise<T> => {
+      const ops = (w: Web3MobileWallet, chainAuthorized: boolean): WalletOps => ({
+        chainAuthorized,
+        capabilities: async () => {
+          const caps = await w.getCapabilities();
+          const features: readonly string[] = caps.features ?? [];
+          // A wallet on the legacy protocol publishes no features array
+          // and answers the deprecated booleans instead. sign_transactions
+          // is mandatory in that protocol, so its absence from `features`
+          // only means something on a wallet that sends the array at all.
+          return {
+            signTransactions:
+              features.length === 0 ||
+              features.includes('solana:signTransactions'),
+            signAndSend:
+              features.includes('solana:signAndSendTransaction') ||
+              caps.supports_sign_and_send_transactions === true,
+          };
+        },
+        signAndSend: async (tx, minContextSlot) => {
+          const sigs = await w.signAndSendTransactions({
+            minContextSlot,
+            transactions: [tx],
+          });
+          return sigs[0];
+        },
+        signOnly: async (tx) => {
+          const signed = await w.signTransactions({ transactions: [tx] });
+          return signed[0];
+        },
+      });
+
+      const open = (requestChain: boolean) =>
+        (connectAnd as unknown as (
+          cb: (w: Web3MobileWallet) => Promise<T>,
+        ) => Promise<T>)(async (w) => {
+          try {
+            await w.authorize(requestChain ? { chain, identity } : { identity });
+          } catch (e) {
+            // Rethrown as a marker *before* `fn` runs, so the caller can
+            // retry knowing nothing has been signed or broadcast yet.
+            if (isAuthorizationFailed(e)) throw new AuthorizeRefused(e);
+            throw e;
+          }
+          return await fn(ops(w, requestChain));
         });
-      }),
+
+      try {
+        return await open(true);
+      } catch (first) {
+        if (!(first instanceof AuthorizeRefused)) throw first;
+
+        /**
+         * The wallet refused to authorise for our cluster. Ask again
+         * without naming one.
+         *
+         * Mobile Wallet Adapter answers -1 for every refusal and gives no
+         * code for "I do not serve that cluster", so this second attempt
+         * is how we find out which it was. If it succeeds the wallet is
+         * healthy and simply is not on our cluster — and the submission
+         * can still go through, because we sign only and broadcast through
+         * our own endpoint. If it fails too, the wallet is declining us
+         * outright.
+         *
+         * A second association, not a second call inside the first: a
+         * wallet that answers -1 closes its activity, so the live session
+         * is already gone. The delay is for its teardown — only one
+         * association may be open at a time.
+         */
+        await new Promise((r) => setTimeout(r, 1500));
+        try {
+          return await open(false);
+        } catch (second) {
+          if (second instanceof AuthorizeRefused) {
+            throw new Error(
+              `The wallet declined to authorise this request, for ${CHAIN} and ` +
+                `without a cluster. Open the wallet, check whether Lode is ` +
+                `listed under its connected apps, and remove it there before ` +
+                `trying again.`,
+            );
+          }
+          throw second;
+        }
+      }
+    },
     [connectAnd, chain, identity],
   );
 
