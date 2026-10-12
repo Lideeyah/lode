@@ -14,6 +14,22 @@ You walk  ->  the phone verifies it is really you walking
           ->  the chain checks the work and mints
 ```
 
+## Install it
+
+**[Download the APK](https://github.com/Lideeyah/lode/releases/latest)** — Android, ~60MB.
+
+Open that link on the phone, tap the APK, and allow installation from
+unknown sources when prompted. There is no Play Store listing.
+
+The build is `arm64-v8a` only, which covers essentially every Android phone
+made since about 2016. It will not run on an x86 emulator; if you need one,
+add `x86_64` to `buildArchs` in `app.json` and rebuild.
+
+Xiaomi's HyperOS and MIUI block sideloaded installs more aggressively than
+stock Android. If you see "App not installed", turn off **MIUI
+optimization** in Settings → Additional settings → Developer options, then
+reboot and retry.
+
 ## The mechanic, precisely
 
 A session is unlocked and sized by verified human movement. No verified
