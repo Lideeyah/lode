@@ -45,7 +45,7 @@ const rewardFor = (difficulty: number) => Math.pow(2, Math.max(0, difficulty - 8
 export default function SummaryScreen() {
   const { width } = useWindowDimensions();
   const router = useRouter();
-  const { signMessage, signAndSendTransaction, connection } = useWallet();
+  const { signMessage, signTransaction, signAndSendTransaction, connection } = useWallet();
   const { authority, challenge, refresh } = useChain();
   const { snapshot, best, trace, machine, challengeAtStart } = useSessionContext();
 
@@ -147,6 +147,11 @@ export default function SummaryScreen() {
       claim,
       challengeAtMine: challengeAtStart ?? challenge.challenge,
       currentChallenge: challenge.challenge,
+      // Sign-only, so the transaction is broadcast through our own
+      // endpoint rather than the wallet's. signAndSend stays as a fallback
+      // for any wallet that declines to sign without sending.
+      signOnly: (tx: Transaction) =>
+        signTransaction(tx) as unknown as Promise<Transaction>,
       signAndSend: (tx: Transaction, slot: number) =>
         signAndSendTransaction(tx, slot) as unknown as Promise<string>,
     });
@@ -166,7 +171,7 @@ export default function SummaryScreen() {
     }
   }, [
     authority, challenge, best, snapshot, digest, signMessage, challengeAtStart,
-    connection, signAndSendTransaction, storedId, refresh,
+    connection, signTransaction, signAndSendTransaction, storedId, refresh,
   ]);
 
   const panelWidth = width - space.base * 2;

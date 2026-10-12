@@ -131,6 +131,22 @@ export function useWallet() {
     [connection, keypair],
   );
 
+  const signTransaction = useCallback(
+    async (tx: Transaction | VersionedTransaction) => {
+      if (tx instanceof VersionedTransaction) {
+        tx.sign([keypair]);
+      } else {
+        tx.feePayer ??= keypair.publicKey;
+        if (!tx.recentBlockhash) {
+          tx.recentBlockhash = (await getBlockhash(connection)).blockhash;
+        }
+        tx.sign(keypair);
+      }
+      return tx;
+    },
+    [connection, keypair],
+  );
+
   return {
     account,
     accounts: account ? [account] : null,
@@ -138,6 +154,8 @@ export function useWallet() {
     disconnect,
     signMessage,
     signMessages: signMessage,
+    signTransaction,
+    signTransactions: signTransaction,
     signAndSendTransaction,
     signAndSendTransactions: signAndSendTransaction,
     connection,

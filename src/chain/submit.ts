@@ -9,6 +9,7 @@ import { Transaction, PublicKey, type Connection } from '@solana/web3.js';
 import { Buffer } from 'buffer';
 import { buildSubmitInstruction, featureDigest, type EffortClaim } from './program';
 import { getBlockhash, getSlot } from './blockhash';
+import { sendRawTransaction } from './send';
 
 export type ClaimPayload = EffortClaim & { authority: string };
 
@@ -41,6 +42,8 @@ export async function submitSolution(params: {
   difficulty: number;
   claim: EffortClaim;
   signAndSend: (tx: Transaction, minContextSlot: number) => Promise<string>;
+  /** Signs without broadcasting. Preferred: see chain/send.ts. */
+  signOnly?: (tx: Transaction) => Promise<Transaction>;
   /** Challenge the solution was found against, to detect a mid-session rotation. */
   challengeAtMine: Uint8Array;
   currentChallenge: Uint8Array;
@@ -53,6 +56,7 @@ export async function submitSolution(params: {
     difficulty,
     claim,
     signAndSend,
+    signOnly,
     challengeAtMine,
     currentChallenge,
   } = params;
@@ -96,7 +100,14 @@ export async function submitSolution(params: {
     tx.recentBlockhash = blockhash;
     void lastValidBlockHeight;
 
-    const signature = await signAndSend(tx, slot);
+    // Sign-only first; fall back to letting the wallet broadcast.
+    let signature: string;
+    if (signOnly) {
+      const signed = await signOnly(tx);
+      signature = await sendRawTransaction(signed.serialize());
+    } else {
+      signature = await signAndSend(tx, slot);
+    }
     return { ok: true, signature };
   } catch (e) {
     const raw = e instanceof Error ? e.message : String(e);
