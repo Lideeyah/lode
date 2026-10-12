@@ -79,6 +79,19 @@ function toPath(pts) {
 
 const markPath = toPath(samplePoints());
 
+/**
+ * Vertical extent of the mark's actual ink, stroke included.
+ *
+ * The viewBox is 100 tall but the curve only occupies part of it, so
+ * spacing a lockup from the viewBox edge leaves a band of empty space that
+ * reads as a mistake. Lockups space from these bounds instead.
+ */
+const MARK_INK = (() => {
+  const ys = samplePoints().map((pt) => pt.y);
+  const half = 9 / 2;
+  return { top: Math.min(...ys) - half, bottom: Math.max(...ys) + half };
+})();
+
 const strokeAttrs = (color, width) =>
   `fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round"`;
 
@@ -115,6 +128,7 @@ function wordmark(capTarget) {
     width: bb.x2 - bb.x1,
     height: bb.y2 - bb.y1,
     x1: bb.x1,
+    x2: bb.x2,
     y1: bb.y1,
   };
 }
@@ -130,20 +144,34 @@ const gap = capTarget;
 // Horizontal lockup: mark at 150 wide, wordmark beside it.
 {
   const markW = 150;
-  const markH = (markW / VIEW_W) * VIEW_H;
   const scale = markW / VIEW_W;
-  const totalW = markW + gap + wm.width;
-  const totalH = Math.max(markH, wm.height);
-  const markY = (totalH - markH) / 2;
-  const textY = (totalH - wm.height) / 2 - wm.y1;
+  const markH = VIEW_H * scale;
+
+  // The trace is a stroke centred on the path, so half of it sits outside
+  // the nominal box at every edge. Without this padding the left of the
+  // mark and the right of the final E are sliced off by the viewBox.
+  const pad = (9 * scale) / 2 + 2;
+
+  // Measured from the mark's ink rather than its nominal width: the curve
+  // flattens towards the right, so a gap measured from x=150 reads far
+  // wider than it is.
+  const gap = capTarget * 0.55;
+
+  const textX = pad + markW + gap - wm.x1;
+  const totalW = textX + wm.x2 + pad;
+  const inkTop = MARK_INK.top * scale;
+  const inkH = (MARK_INK.bottom - MARK_INK.top) * scale;
+  const totalH = Math.max(inkH, wm.height) + pad * 2;
+  const markY = pad + (totalH - pad * 2 - inkH) / 2 - inkTop;
+  const textY = pad + (totalH - pad * 2 - wm.height) / 2 - wm.y1;
 
   writeFileSync(
     'brand/lockup-horizontal.svg',
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalW.toFixed(2)} ${totalH.toFixed(2)}" width="${totalW.toFixed(0)}" height="${totalH.toFixed(0)}">
-  <g transform="translate(0 ${markY.toFixed(2)}) scale(${scale.toFixed(4)})">
-    <path d="${markPath}" ${strokeAttrs(SIGNAL, 9 / scale * scale)}/>
+  <g transform="translate(${pad.toFixed(2)} ${markY.toFixed(2)}) scale(${scale.toFixed(4)})">
+    <path d="${markPath}" ${strokeAttrs(SIGNAL, 9)}/>
   </g>
-  <g transform="translate(${(markW + gap - wm.x1).toFixed(2)} ${textY.toFixed(2)})">
+  <g transform="translate(${textX.toFixed(2)} ${textY.toFixed(2)})">
     <path d="${wm.d}" fill="${INK}"/>
   </g>
 </svg>
@@ -154,19 +182,26 @@ const gap = capTarget;
 // Stacked lockup, for square spaces.
 {
   const markW = 150;
-  const markH = (markW / VIEW_W) * VIEW_H;
   const scale = markW / VIEW_W;
-  const vgap = capTarget * 0.8;
-  const totalW = Math.max(markW, wm.width);
-  const totalH = markH + vgap + wm.height;
+  const pad = (9 * scale) / 2 + 2;
+
+  // Spaced from the ink, not the viewBox.
+  const inkTop = MARK_INK.top * scale;
+  const inkH = (MARK_INK.bottom - MARK_INK.top) * scale;
+  const vgap = capTarget * 0.45;
+
+  const textW = wm.x2 - wm.x1;
+  const contentW = Math.max(markW, textW);
+  const totalW = contentW + pad * 2;
+  const totalH = inkH + vgap + wm.height + pad * 2;
 
   writeFileSync(
     'brand/lockup-stacked.svg',
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalW.toFixed(2)} ${totalH.toFixed(2)}" width="${totalW.toFixed(0)}" height="${totalH.toFixed(0)}">
-  <g transform="translate(${((totalW - markW) / 2).toFixed(2)} 0) scale(${scale.toFixed(4)})">
+  <g transform="translate(${(pad + (contentW - markW) / 2).toFixed(2)} ${(pad - inkTop).toFixed(2)}) scale(${scale.toFixed(4)})">
     <path d="${markPath}" ${strokeAttrs(SIGNAL, 9)}/>
   </g>
-  <g transform="translate(${((totalW - wm.width) / 2 - wm.x1).toFixed(2)} ${(markH + vgap - wm.y1).toFixed(2)})">
+  <g transform="translate(${(pad + (contentW - textW) / 2 - wm.x1).toFixed(2)} ${(pad + inkH + vgap - wm.y1).toFixed(2)})">
     <path d="${wm.d}" fill="${INK}"/>
   </g>
 </svg>

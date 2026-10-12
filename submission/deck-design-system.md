@@ -66,6 +66,31 @@ feel — use them consistently.
 None. If the deck is presented live, no builds, no transitions beyond a cut.
 A measuring instrument shows the reading; it doesn't perform the reading.
 
+## Using the logo
+
+Upload these alongside this document and tell the tool, in these words:
+
+> Use `lode-lockup-horizontal.png` as the logo. Place it bottom-left on
+> every slide at roughly 110px wide, in the margin, never over content. On
+> the title slide use `lode-icon.png` large and centred instead. Do not
+> recolour, outline, rotate or add effects to either.
+
+| File | Where it goes |
+|---|---|
+| `lode-lockup-horizontal.png` | Footer on every content slide |
+| `lode-lockup-stacked.png` | Alternative for the closing slide |
+| `lode-icon.png` | Title slide — paper mark on an ink tile |
+| `lode-mark.png` | The waveform alone, for decorative use |
+
+SVG versions of the lockups and the mark are included for any tool that
+accepts them; they scale without softening.
+
+A word of warning worth passing to the tool: the mark is two footfall
+impulses, and the second is deliberately smaller than the first. If a
+rendering ever makes them look equal, or flips the order, the mark has lost
+its meaning — human gait repeats approximately, never exactly, and that
+asymmetry is the entire idea.
+
 ## Assets in the repo
 
 `brand/mark.svg` · `brand/lockup-horizontal.svg` · `brand/lockup-stacked.svg`
