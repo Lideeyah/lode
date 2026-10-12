@@ -35,10 +35,10 @@ numbers on screen are the argument.
 
 ---
 
-### 0:24 – 0:33 · Warming — 17 words
+### 0:24 – 0:33 · Warming — 15 words
 
-> Start a session and it listens before it pays. Five clean windows before
-> anything accrues.
+> Start a session and it doesn't pay straight away. Five clean windows
+> before anything accrues.
 
 ---
 
@@ -177,6 +177,11 @@ and it is the difference between being caught and being ahead of them.
 The three-word signpost earns its place: without it the sentence sounds
 like more description, and a listener may not register that you raised the
 weakness yourself. That framing is the entire reason to say it.
+
+**Don't say the app "listens".** It reads motion sensors, not a
+microphone, and a listener with no screen in front of them may well assume
+audio. On screen the word is fine — it sits beside a waveform — but say
+"reads" or "measures" out loud, including in Q&A.
 
 **Never say "gait" out loud.** It is indistinguishable from "gate", and a
 listener spends the next three seconds working out which you meant. Say
