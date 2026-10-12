@@ -14,8 +14,14 @@ Use these and no others. All are verifiable against the mint on devnet.
 | Hashes searched | **128,177** | 9 |
 | Paid for that session | **12.80 LODE** | 9, 10 |
 | Total issued to date | **2,082.40 LODE** | 9, 15 |
-| Shake before the fix | **0.689, credited** | 8 |
-| Shake after the fix | **0.299, refused** | 8 |
+| Shaken phone, before the fix | **0.74, credited** | 8 |
+| Shaken phone, after the fix | **0.208, refused** | 8 |
+
+Slide 8 tells one story about one attack: a phone shaken by hand, before
+and after. `docs/classifier-robustness.md` also records a second, cleverer
+attack — a slow shake at walking cadence, 0.689 before and 0.494 after —
+but putting both pairs on one slide is what caused the figures to get
+crossed in the first place. Keep the slide to the one pair.
 | Rotation coupling, walking | **0.997** | 7 |
 | Rotation coupling, shaken | **0.064** | 7, 10 |
 | Confidence when shaken | **33** | 10 |
@@ -179,7 +185,7 @@ the hard way: a shaken phone scored **0.74** and credited, while the only
 signal that genuinely rejected it was drowned out by the other five.
 
 Combining them so the score collapses when any single signature goes
-missing changed that result to **0.299** — refused.
+missing changed that result to **0.208** — refused.
 
 A motion floor sits ahead of all six, because the features are shape
 statistics and the shape of sensor noise lands inside the walking bands by
@@ -191,7 +197,7 @@ Three sessions on a Xiaomi 14T, reading its own sensors with no tuning for
 that handset: mean confidence **78** and **70** against a threshold of 62,
 mining difficulty **20** and **18**.
 
-**Visual:** two big mono figures — `0.74 CREDITED` in `error`, `0.299
+**Visual:** two big mono figures — `0.74 CREDITED` in `error`, `0.208
 REFUSED` in `credit`. Caption beneath: `THE SAME SHAKE, BEFORE AND AFTER`.
 Then a single smaller line under them: `ON DEVICE · XIAOMI 14T · MEAN
 CONFIDENCE 78 · DIFFICULTY 20`.

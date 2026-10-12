@@ -15,7 +15,7 @@ Threshold for crediting: **0.62**
 | Walking, pocket — damped, noisier | human | 0.998 | credited |
 | Walking, backpack — weak coupling in noise | human | 1.000 | credited |
 | Running — 2.9Hz | human | 0.994 | credited |
-| Shaking by hand — 5.5Hz, sharp | attack | 0.248 | refused |
+| Shaking by hand — 5.5Hz, sharp | attack | 0.208 | refused |
 | **Slow deliberate shake — faked at walking cadence** | attack | 0.494 | refused |
 | Swinging in a bag — pendulum | not gait | 0.399 | refused |
 | In a vehicle — engine and road | not gait | 0.397 | refused |
