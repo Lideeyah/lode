@@ -1,6 +1,6 @@
 # Lode — demo voiceover
 
-Timed to `lode-demo.mp4` (2:13). **224 spoken words**, about 101
+Timed to `lode-demo.mp4` (2:13). **215 spoken words**, about 97
 words per minute — slow enough to sound unhurried and to leave the screen
 room to do its own work.
 
@@ -115,17 +115,39 @@ numbers on screen are the argument.
 
 ---
 
-### 1:58 – 2:13 · The honest note, and close — 39 words
+### 1:58 – 2:13 · The honest note, and close — 30 words
 
-> One honest note. The chain verifies the hash. It cannot verify the
-> walking — the phone decides that, and the chain trusts it. Hardware
-> attestation closes the gap. That's next.
+> One honest note. The chain can't check the walking — the phone does,
+> and the chain trusts it. Attestation is next.
 
 *(pause)*
 
 > Lode. Proof of work where the scarce input is you.
 
 ---
+
+## Per-section budget
+
+Measured against the verified chapter windows. Nothing is over; the three
+marked tight are deliverable but leave no room to add a word.
+
+| Section | Window | Words | wpm |
+|---|---|---|---|
+| Onboarding | 14s | 31 | 133 tight |
+| Connect | 4s | 3 | 45 |
+| At rest | 6s | 8 | 80 |
+| Warming | 9s | 15 | 100 |
+| Crediting | 20s | 37 | 111 |
+| Verification | 9s | 16 | 107 |
+| The shake | 18s | 19 | 63 |
+| Recovery | 14s | 20 | 86 |
+| Ending | 10s | 11 | 66 |
+| Submit | 6s | 13 | 130 tight |
+| Reward | 8s | 11 | 82 |
+| Honest note + close | 15s | 31 | 124 tight |
+| **Total** | **133s** | **215** | **97** |
+
+If you add a line anywhere, check this table before you do.
 
 ## If you need it shorter still
 
