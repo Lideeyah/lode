@@ -1,7 +1,14 @@
 # Lode — pitch script
 
 A pitch is not a demo. The demo video shows the thing working; this one
-argues why it should exist. Minimal screen time — this is you talking.
+argues why it should exist.
+
+**Note on length.** The Clock In submission form has no pitch-video field —
+it asks only for a deck, a demo video, a repo and an APK. So this is for a
+live round or for narrating the deck, not a submission artifact. Unless a
+format says otherwise, use the 60-second cut below; three minutes is longer
+than most judging rounds give you, and nobody has ever complained that a
+pitch ended early.
 
 **Target: 3:00 at ~144wpm — this draft is 431 words.** A pitch to camera carries faster
 than a voiceover, because there is no screen doing the work for you. Each
