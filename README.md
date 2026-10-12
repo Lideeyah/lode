@@ -186,8 +186,7 @@ src/mining/          SHA-256 in yielding chunks
 src/chain/           program bindings, adapter, submission
 src/components/      design system primitives
 program/             the Anchor program
-brand/               mark, lockups, icon
-scripts/             brand generation, program id sync, e2e check
+scripts/             program id sync, e2e check
 ```
 
 ## Calibration

@@ -106,10 +106,11 @@ rendering ever makes them look equal, or flips the order, the mark has lost
 its meaning — human gait repeats approximately, never exactly, and that
 asymmetry is the entire idea.
 
-## Assets in the repo
+## Assets
 
-`brand/mark.svg` · `brand/lockup-horizontal.svg` · `brand/lockup-stacked.svg`
-· `brand/icon.svg`
+The mark, lockups and icon are kept outside this repository, which holds the
+app. The shipped app icon and the onboarding lockup are the only brand files
+here, under `assets/`.
 
 The mark is two footfall impulses, the second at 82% of the first, generated
 from a damped-sine function rather than drawn. The asymmetry is the whole
