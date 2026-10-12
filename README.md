@@ -36,6 +36,9 @@ hash rather than trusting the claim.
 so you can confirm the client and the program agree without installing
 anything.
 
+[ux-walkthrough.md](docs/ux-walkthrough.md) shows every screen and state
+with screenshots, including the error paths.
+
 Two documents go further than this README:
 [classifier-robustness.md](docs/classifier-robustness.md) measures the
 classifier against twelve movement scenarios including four spoofing
