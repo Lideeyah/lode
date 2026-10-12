@@ -39,6 +39,10 @@ anything.
 [ux-walkthrough.md](docs/ux-walkthrough.md) shows every screen and state
 with screenshots, including the error paths.
 
+[security-audit-response.md](docs/security-audit-response.md) triages all
+28 findings from the hackathon's advisory audit — what was fixed, what is
+a false positive and why, and what is accepted.
+
 Two documents go further than this README:
 [classifier-robustness.md](docs/classifier-robustness.md) measures the
 classifier against twelve movement scenarios including four spoofing

@@ -3,6 +3,8 @@ name = "lode"
 version = "0.1.0"
 description = "Proof of work gated by verified human movement"
 edition = "2021"
+license = "MIT"
+repository = "https://github.com/Lideeyah/lode"
 
 [lib]
 crate-type = ["cdylib", "lib"]

@@ -6,6 +6,13 @@
  * it does is real: real ed25519 signatures over the same claim bytes, real
  * transactions sent to devnet, real mints. Only the custody differs — the
  * key lives in localStorage rather than in a wallet app.
+ *
+ * SECURITY: this file is the web build only, and localStorage is readable
+ * by any script on the page. It exists so the app can be demonstrated in a
+ * browser on a throwaway devnet key, and it must never hold a key with
+ * real value. The Android build — the one that ships — never touches key
+ * material: it signs exclusively through Mobile Wallet Adapter, so the
+ * secret stays inside the wallet app.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Connection, Keypair, Transaction, VersionedTransaction } from '@solana/web3.js';
