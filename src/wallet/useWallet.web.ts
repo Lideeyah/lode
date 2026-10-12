@@ -18,7 +18,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Connection, Keypair, Transaction, VersionedTransaction } from '@solana/web3.js';
 import { getBlockhash } from '../chain/blockhash';
 import nacl from 'tweetnacl';
-import { RPC_ENDPOINT } from './config';
+import { APP_IDENTITY, CHAIN, RPC_ENDPOINT } from './config';
 import { Buffer } from 'buffer';
 
 const STORAGE_KEY = 'lode.web.keypair.v1';
@@ -154,10 +154,42 @@ export function useWallet() {
     [connection, keypair],
   );
 
+  /**
+   * The web counterpart of the native `connectAnd`.
+   *
+   * There is no association to open here — the local keypair signs in
+   * process — so this just hands the callback the same four methods the
+   * native wallet proxy exposes. It exists so app/summary.tsx can take one
+   * code path on both platforms.
+   */
+  const connectAnd = useCallback(
+    async <T,>(cb: (w: unknown) => Promise<T>): Promise<T> =>
+      cb({
+        authorize: async () => ({}),
+        getCapabilities: async () => ({
+          features: ['solana:signTransactions', 'solana:signAndSendTransaction'],
+          supports_sign_and_send_transactions: true,
+        }),
+        signTransactions: async ({
+          transactions,
+        }: {
+          transactions: (Transaction | VersionedTransaction)[];
+        }) => Promise.all(transactions.map((tx) => signTransaction(tx))),
+        signAndSendTransactions: async ({
+          transactions,
+        }: {
+          transactions: (Transaction | VersionedTransaction)[];
+        }) =>
+          Promise.all(transactions.map((tx) => signAndSendTransaction(tx))),
+      }),
+    [signTransaction, signAndSendTransaction],
+  );
+
   return {
     account,
     accounts: account ? [account] : null,
     connect,
+    connectAnd,
     disconnect,
     signMessage,
     signMessages: signMessage,
@@ -166,5 +198,9 @@ export function useWallet() {
     signAndSendTransaction,
     signAndSendTransactions: signAndSendTransaction,
     connection,
+    // Mirrors the native hook's context fields; unused on web beyond
+    // being passed to the no-op authorize above.
+    chain: CHAIN,
+    identity: APP_IDENTITY,
   };
 }
