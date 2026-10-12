@@ -63,7 +63,7 @@ someone find it.
 0:00 Mining where the scarce input is you
 0:14 Connecting a wallet
 0:18 At rest — the instrument is idle
-0:24 Warming: listening before it credits anything
+0:24 Warming: measuring before it credits anything
 0:33 Crediting — effort, confidence, iteration budget
 0:53 Verification: what the instrument sees
 1:02 Shaking the phone instead of walking

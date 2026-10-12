@@ -192,7 +192,7 @@ export default function SessionScreen() {
 
         {warming ? (
           <Card>
-            <Label>Listening, not yet crediting</Label>
+            <Label>Measuring, not yet crediting</Label>
             <Text style={styles.body}>
               {snapshot.warmingProgress} of {WARMING_WINDOWS} consecutive windows have
               met the threshold. Nothing accrues until the instrument is sure, which
