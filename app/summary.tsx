@@ -150,8 +150,15 @@ export default function SummaryScreen() {
       // Sign-only, so the transaction is broadcast through our own
       // endpoint rather than the wallet's. signAndSend stays as a fallback
       // for any wallet that declines to sign without sending.
-      signOnly: (tx: Transaction) =>
-        signTransaction(tx) as unknown as Promise<Transaction>,
+      signOnly: async (tx: Transaction) => {
+        try {
+          return (await signTransaction(tx)) as unknown as Transaction;
+        } catch (e) {
+          throw new Error(
+            `signTransaction: ${e instanceof Error ? e.message : String(e)}`,
+          );
+        }
+      },
       signAndSend: (tx: Transaction, slot: number) =>
         signAndSendTransaction(tx, slot) as unknown as Promise<string>,
     });

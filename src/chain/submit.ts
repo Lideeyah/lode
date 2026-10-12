@@ -114,11 +114,16 @@ export async function submitSolution(params: {
 
     // Mobile Wallet Adapter failures surface as opaque codes. Say what the
     // user can actually do about them.
-    const message = /authorization request failed|-1\//i.test(raw)
+    const friendly = /authorization request failed|-1\//i.test(raw)
       ? 'The wallet refused the request. Check that a Solana wallet is installed, that it is unlocked, and that it is switched to devnet — most wallets need testnet mode enabled before they will authorise a devnet app.'
       : /no wallet|not found|activity/i.test(raw)
         ? 'No compatible wallet responded. Install a Solana wallet that supports Mobile Wallet Adapter, such as Phantom or Solflare.'
         : raw;
+
+    // Keep the original text as well. The friendly line is a guess at the
+    // cause; the raw one is what actually happened, and without it a
+    // failure report is unactionable.
+    const message = friendly === raw ? raw : `${friendly}\n\n[${raw}]`;
 
     return { ok: false, reason: 'failed', message };
   }
