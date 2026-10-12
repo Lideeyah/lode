@@ -1,7 +1,10 @@
 # Security audit response
 
 The hackathon's advisory audit ran against commit `8714c72` and returned 28
-findings: 6 high, 6 medium, 12 low, 4 info. This triages every one.
+findings: 6 high, 6 medium, 12 low, 4 info. Every distinct finding is
+triaged below. Where the scan reported the same issue repeatedly — one
+dependency advisory per package, one per duplicated crate — the repeats
+are grouped and marked ×N rather than restated.
 
 Two were acted on. The rest are either false positives with a specific
 reason, or accepted risks already documented in

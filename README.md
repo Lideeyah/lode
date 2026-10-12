@@ -39,15 +39,17 @@ anything.
 [ux-walkthrough.md](docs/ux-walkthrough.md) shows every screen and state
 with screenshots, including the error paths.
 
-[security-audit-response.md](docs/security-audit-response.md) triages all
+[security-audit-response.md](docs/security-audit-response.md) triages the
 28 findings from the hackathon's advisory audit — what was fixed, what is
 a false positive and why, and what is accepted.
 
 Two documents go further than this README:
 [classifier-robustness.md](docs/classifier-robustness.md) measures the
-classifier against twelve movement scenarios including four spoofing
-attacks, and [threat-model.md](docs/threat-model.md) states what is
-defended, what is not, and what closes the gap.
+classifier against thirteen movement scenarios — six walking and running,
+seven non-gait, including a shake deliberately faked at walking cadence —
+with no false positives and no false negatives, and
+[threat-model.md](docs/threat-model.md) states what is defended, what is
+not, and what closes the gap.
 
 ---
 
