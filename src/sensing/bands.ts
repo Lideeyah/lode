@@ -96,11 +96,29 @@ export const BANDS: Record<FeatureKey, Band> = {
    * pitch rate and vertical acceleration are coupled. Translation alone
    * breaks the coupling.
    */
+  /**
+   * Weighted far above the others, deliberately.
+   *
+   * This is the only signature that cannot be produced by translating the
+   * phone: a body rotates as it steps, and a hand moving a phone up and
+   * down does not. Every other feature can be approximated by someone
+   * shaking carefully — a slow, rhythmic shake at walking cadence matches
+   * on frequency, skew, drift and even step variance.
+   *
+   * At equal weight that attack scored 0.689 and credited, while reading
+   * 0.06 here against 0.997 for a real walk. The feature separated the
+   * cases perfectly and the combination ignored it.
+   *
+   * 3.6 comes from a sweep (see robustness.test.ts). Below 2.0 the slow
+   * shake credits; by 3.6 it scores 0.49 against a 0.62 threshold, and
+   * every modelled walk still scores above 0.99. Past 3.6 the returns
+   * flatten and the classifier leans on one signal more than is prudent.
+   */
   gyroAccelCorr: {
     min: 0.12,
     max: 1.0,
     softness: 0.045,
-    weight: 1.4,
+    weight: 3.6,
     absolute: true,
     rationale: 'Walking couples rotation to vertical motion. Shaking does not.',
   },

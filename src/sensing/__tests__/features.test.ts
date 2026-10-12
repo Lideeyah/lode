@@ -191,10 +191,11 @@ describe('scoreConfidence', () => {
     const ungated = scoreConfidence(extractFeatures(still));
     const gated = score(still);
 
-    // Still far from zero on shape alone — the gate is what rejects it,
-    // not the bands. Tightening the bands narrowed this but did not close
-    // it, which is precisely why the motion floor has to exist.
-    expect(ungated.score).toBeGreaterThan(0.35);
+    // Still well above zero on shape alone. Successive tightening of the
+    // bands and weights has narrowed this from 0.91 to about 0.26, but
+    // never closed it — which is precisely why the motion floor exists
+    // as a gate rather than as another weighted term.
+    expect(ungated.score).toBeGreaterThan(0.2);
     expect(gated.score).toBe(0);
     expect(gated.explanation).toMatch(/not moving/i);
   });
