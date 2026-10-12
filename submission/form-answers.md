@@ -73,7 +73,7 @@ rotates as it steps, and a shaken phone translates without rotating.
 The six are combined geometrically rather than averaged, so the score
 collapses when any single signature goes missing. An average let five soft
 passes outvote one hard failure: a shaken phone scored 0.74 and credited.
-The same shake now scores 0.299 and is refused. A motion floor sits ahead
+The same shake now scores 0.208 and is refused. A motion floor sits ahead
 of all six, because shape statistics computed over sensor noise land inside
 the walking bands by accident.
 
@@ -121,10 +121,21 @@ outvote five passing ones. Weighting that signal from a sweep takes the
 attack to 0.494 against a 0.62 threshold with every modelled walk still
 above 0.99.
 
-Full table, the weight sweep, and what synthetic scenarios cannot
-establish: docs/classifier-robustness.md
+VERIFIED ON HARDWARE
+Three sessions walked on a Xiaomi 14T, reading its own accelerometer and
+gyroscope at a measured 50Hz, with no tuning for that handset: mean
+confidence 78 and 70 against a threshold of 62, mining solutions at
+difficulty 20 and 18. The bands credit a real person walking, first time,
+on a device they were not calibrated for. What has not been shown is that
+they generalise across other gaits, carry positions and sensor hardware.
+
+Full table, the weight sweep, the on-device results, and what synthetic
+scenarios cannot establish: docs/classifier-robustness.md
 What is defended, what is not, and what closes the gap:
 docs/threat-model.md
+Every screen and state, including error paths: docs/ux-walkthrough.md
+Triage of all 28 findings from the advisory audit:
+docs/security-audit-response.md
 ```
 
 ---
@@ -202,19 +213,23 @@ The coach scored 70/100 and listed six fixes. Where each stands:
 
 | # | Fix | Status |
 |---|---|---|
-| 1 | Verifiable repository evidence | **Paste the repo URL into the form** — it was absent, so `CODE: NONE` and a whole evidence category scored zero |
+| 1 | Verifiable repository evidence | Repo URL submitted and the advisory audit run against it — that audit is what fills the code-evidence slot, not the URL field |
 | 2 | Close or narrow the client-trust gap | `docs/threat-model.md` — what is defended with measurements, what is not, how fraud would be detected, what attestation closes |
 | 3 | Prove classifier robustness | `docs/classifier-robustness.md` — twelve scenarios, 0 false positives, 0 false negatives, and a real attack found and fixed |
 | 4 | Retention and token utility | Two new deck slides, with figures that survive an explorer check |
-| 5 | More UX surface area | Screenshots — in progress |
+| 5 | More UX surface area | Twelve screens in `docs/screenshots/`, written up in `docs/ux-walkthrough.md`, four of them on a deck slide |
 | 6 | Test on Seeker or label as generic Android | SKR answer now says "MWA-compatible Android, pending Seeker validation" |
 
-Item 1 is the cheapest and the largest. The coach read the writeup, the
-deck and the demo, and explicitly could not read any code.
+All six are addressed. The audit returned 28 findings; two were acted on
+— the repository is now MIT licensed, and the web build's use of browser
+storage for a throwaway devnet key is documented at the point it happens.
+The rest are false positives with stated reasons, or accepted dependency
+advisories inherited from Expo and web3.js. That triage is in
+docs/security-audit-response.md.
 
 ## Checklist before submitting
 
-- [ ] **Repository URL pasted in** — this was missing when the coach ran
+- [ ] Re-run the AI Coach — it now has code evidence, which it did not before
 - [ ] Demo video set to **Public**
 - [ ] APK link opened once on a phone to confirm it downloads
 - [ ] Repo loads while logged out
