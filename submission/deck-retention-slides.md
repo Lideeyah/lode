@@ -37,20 +37,40 @@ hours. Nobody can buy a thousand times your throughput, which is exactly
 what makes most token distributions pointless to participate in after
 week one.
 
-**Visual:** three stacked mono figures with uppercase labels — `STREAK`,
-`TOTAL EFFORT`, `BEST DIFFICULTY` — drawn from the History screen. Real
-numbers from a real session, not placeholders.
+**Visual:** two mono figures with uppercase labels, side by side. Use
+exactly these — both are verifiable on devnet, which is the entire reason
+to put a number on a slide:
 
-**Note:** the honest weakness is that this is a thesis about behaviour and
-not yet an observed retention curve. If asked, say that: the app shipped
-three days ago, there is no cohort data, and the argument stands on the
-behaviour being pre-existing rather than on numbers we don't have.
+```
+BEST DIFFICULTY          LODE MINED
+22                       2,069.60
+```
+
+**Do not show a streak, and do not show total effort.** The app is three
+days old, so the true streak is one day, and a one-day streak printed on a
+slide arguing for retention argues against it. Inventing a larger one is
+worse: a judge who checks finds fabricated usage data, and everything else
+on the slide becomes suspect.
+
+The point of the slide is that progress is *legible and cumulative*, which
+is made by showing what accumulates, not by claiming to have accumulated
+it. Two real figures do that. If the layout demands a third, use
+`SESSIONS` with the honest count.
+
+**Note:** this is a thesis about behaviour, not an observed retention
+curve, and that is worth saying aloud if asked. The app shipped three days
+ago and there is no cohort data. The argument stands on the behaviour
+being pre-existing — people walk tomorrow regardless — rather than on
+numbers we do not have.
 
 ---
 
 ## Slide 14 · What the token is for
 
 ### Supply is capped by human hours, not by capital.
+
+*Total issued to date: 2,069.60 LODE, every token of it mined by a verified
+session. Mint `8vRrdq81gjZVcCFFCrZcjd2AKrkenKmSw5ndhYcUmdrN` on devnet.*
 
 That constraint is the whole economic argument, and it cuts two ways.
 
