@@ -57,17 +57,35 @@ The same capture happens everywhere crypto tries to reach people:
 
 ---
 
-## 4 · The move
+## 4 · Why effort, specifically
 
-### Change the input.
+### Hashrate is for sale. An hour of walking isn't.
 
-Electricity scales with money. Time doesn't.
+Everything on the previous slide fails for the same reason: it has a price.
+Capital converts straight into electricity, into GPUs, into wallets, into
+solved captchas. Scale is a purchase order.
 
-You can rent ten thousand GPUs this afternoon. You cannot rent ten thousand
-bodies to walk for an hour.
+Physical effort is the one input that doesn't convert. Ten thousand GPUs is
+an afternoon and a credit card. Ten thousand people walking for an hour is
+ten thousand people walking for an hour.
 
-**Visual:** two big mono figures side by side — `∞` under `CAPITAL BUYS
-HASHRATE`, `1` under `A BODY WALKS ONCE`. Restraint over cleverness here.
+That is the entire reason this mechanism holds.
+
+**Visual:** a mono table, `rule` hairlines, no fill. The final row is the
+slide — leave the price column empty and let the gap do the work.
+
+| `INPUT` | `PRICE AT SCALE` |
+|---|---|
+| Hashrate | Rentable by the hour |
+| Wallets | Free, unlimited |
+| Captcha solves | A tenth of a cent each |
+| Proof-of-personhood bypass | Whatever an identity costs |
+| **An hour of walking** | **—** |
+
+**Note:** slide 3 says the problem is capture by capital. This slide says
+why effort escapes it. If a judge is going to object that walking is an
+arbitrary choice, this is the slide that answers them — so it needs to read
+as an argument, not a restatement.
 
 ---
 
