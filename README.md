@@ -14,6 +14,43 @@ You walk  ->  the phone verifies it is really you walking
           ->  the chain checks the work and mints
 ```
 
+## If you're judging this
+
+Four minutes, in this order.
+
+**1 · Watch 1:02 to 1:20** of the [demo](https://youtube.com/shorts/PFBdXa-BeTs).
+That's the phone being shaken instead of walked, and the classifier refusing
+to credit it. It's the product's central claim, on camera.
+
+**2 · Read [`src/sensing/bands.ts`](src/sensing/bands.ts)** — 124 lines. Every
+threshold the classifier uses, with the reasoning for each. This is the file
+that decides whether you get paid.
+
+**3 · Read [`program/programs/lode/src/lib.rs`](program/programs/lode/src/lib.rs)**
+— 379 lines. The `submit` instruction is the whole product: it recomputes the
+hash rather than trusting the claim.
+
+**4 · Verify it on chain.** The program is
+[live on devnet](https://explorer.solana.com/address/ADYPeA3jNDXoXQjYSTXwLCXjFiWJWZx99ANRnhiGf5Wp?cluster=devnet).
+`node scripts/e2e-submit.mjs` mines against the live challenge and submits,
+so you can confirm the client and the program agree without installing
+anything.
+
+### What to be sceptical about
+
+Two things, which we'd rather name than have you find.
+
+**The chain cannot verify the walking.** It verifies the hash and the
+signature. The classification runs on the device and the program trusts it.
+Hardware attestation closes that gap and is the next thing to build.
+
+**The thresholds are not yet calibrated against real human walking.** They
+are reasoned starting points, validated against synthetic signals that
+confirm walking must outscore shaking must outscore stillness. The
+separation is real; the exact numbers are a device-day away, not a redesign.
+
+---
+
 ## Watch it
 
 **[Demo video](https://youtube.com/shorts/PFBdXa-BeTs)** — two minutes: a
