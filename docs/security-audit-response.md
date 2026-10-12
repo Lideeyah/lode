@@ -144,10 +144,12 @@ Worth saying, because its absence is not evidence of safety: the audit is
 a static scan, and the central weakness of this project is architectural,
 not a code defect.
 
-**A modified client can mint without walking.** The chain verifies the
-hash and the signature; it cannot verify that the gait classification was
-honest. No scanner will flag that, because there is no bug — it is the
-design, and closing it needs hardware attestation.
+**A modified client can mint without walking.** The program proves the
+work — it recomputes the preimage and checks the difficulty — and the
+signature binds it to a wallet. What sits outside that proof is the gait
+verdict, which the client produces and the program accepts. No scanner
+will flag it, because there is no bug: it is where the trust boundary
+falls, and closing it needs hardware attestation.
 
 That is set out in full in [threat-model.md](threat-model.md), and it was
 written before this audit ran.
