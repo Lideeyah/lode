@@ -2,7 +2,8 @@
 
 Team HER · Track: Clock In Hackathon · Deadline **13/10/2026 00:59**
 
-Copy each block into its field. Two answers need you, marked `[YOURS]`.
+Copy each block into its field. Everything is filled in except the deck
+URL, which doesn't exist yet.
 
 ---
 
@@ -16,7 +17,9 @@ Lode
 
 ## PRIOR FUNDING FROM A VC OR ANGEL INVESTOR?
 
-`[YOURS]` — your fact to state. Almost certainly **No**.
+```
+No
+```
 
 ---
 
@@ -168,7 +171,6 @@ unlike an EAS artifact link, which expires after about thirty days.
 
 - [ ] Demo video set to **Public**
 - [ ] Deck published, URL pasted in
-- [ ] Prior-funding question answered
 - [ ] APK link opened once on a phone to confirm it downloads
 - [ ] Repo loads while logged out
 - [ ] Hit **Save** before **Submit** — the lead submits
