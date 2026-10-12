@@ -2,8 +2,7 @@
 
 Team HER · Track: Clock In Hackathon · Deadline **13/10/2026 00:59**
 
-Copy each block into its field. Everything is filled in except the deck
-URL, which doesn't exist yet.
+Every field is filled in. Copy each block into its matching field.
 
 ---
 
@@ -132,8 +131,10 @@ secure element is the natural place for it.
 ## DECK URL *
 
 ```
-[paste once the deck is published]
+https://drive.google.com/file/d/1ce7y9y3WbhFaLkMpp6wn9P9h4oixobgk/view?usp=sharing
 ```
+
+Verified publicly accessible — downloads as a PDF with no sign-in.
 
 ---
 
@@ -170,7 +171,6 @@ unlike an EAS artifact link, which expires after about thirty days.
 ## Checklist before submitting
 
 - [ ] Demo video set to **Public**
-- [ ] Deck published, URL pasted in
 - [ ] APK link opened once on a phone to confirm it downloads
 - [ ] Repo loads while logged out
 - [ ] Hit **Save** before **Submit** — the lead submits
