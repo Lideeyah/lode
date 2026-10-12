@@ -180,10 +180,21 @@ PROGRAM   ADYPeA3jNDXoXQjYSTXwLCXjFiWJWZx99ANRnhiGf5Wp
 MINT      8vRrdq81gjZVcCFFCrZcjd2AKrkenKmSw5ndhYcUmdrN
 ```
 
-The session in our demo found a difficulty-22 solution across 250,618
-hashes and was paid 1,638.40 LODE.
+The session shown in the screenshots on the next slide found a
+difficulty-15 solution across 128,177 hashes and was paid 12.80 LODE.
 
-**Visual:** addresses in mono, `muted`, small. The three numbers large.
+Across every session mined so far, 2,082.40 LODE has been issued — all of
+it against verified effort, none of it pre-mined or allocated.
+
+**Visual:** addresses in mono, `muted`, small. Three large figures:
+`DIFFICULTY 15`, `HASHES 128,177`, `LODE MINED 12.80`, with
+`2,082.40 TOTAL ISSUED` beneath in a smaller size.
+
+**Note:** these are the numbers from the session in the screenshots, so
+the two slides agree. An earlier draft quoted a different session —
+difficulty 22, 1,638.40 LODE — which was equally real but did not match
+anything shown, and an unexplained discrepancy between adjacent slides
+reads as carelessness whichever number is bigger.
 
 ---
 
